@@ -44,9 +44,19 @@ def TF(P, fexc, finh, adapt, EL_mV, Qe=1.5e-9, Qi=5e-9, Gl=10e-9):
     Tv = ((fe * (Ue * Te) ** 2 + fi * (Ui * Ti) ** 2)
           / (fe * (Ue * Te) ** 2 / (Te + Tm) + fi * (Ui * Ti) ** 2 / (Ti + Tm)))
     TvN = Tv * Gl / Cm
-    x1, x2, x3 = (muV + 60e-3) / 10e-3, (sV - 4e-3) / 6e-3, TvN - 0.5
-    vthr = (P[0] + P[1] * x1 + P[2] * x2 + P[3] * x3 + P[4] * x1 * x1 + P[5] * x2 * x2
-            + P[6] * x3 * x3 + P[7] * x1 * x2 + P[8] * x1 * x3 + P[9] * x2 * x3)
+
+    # effective threshold: second-order polynomial in the normalised membrane-potential moments
+    muV0, DmuV0 = -60e-3, 10e-3
+    sV0, DsV0 = 4e-3, 6e-3
+    TvN0, DTvN0 = 0.5, 1.
+    muV_norm = (muV - muV0) / DmuV0
+    sV_norm = (sV - sV0) / DsV0
+    TvN_norm = (TvN - TvN0) / DTvN0
+    vthr = (
+        P[0] + P[1] * muV_norm + P[2] * sV_norm + P[3] * TvN_norm + P[4] * muV_norm ** 2
+        + P[5] * sV_norm ** 2 + P[6] * TvN_norm ** 2 + P[7] * muV_norm * sV_norm
+        + P[8] * muV_norm * TvN_norm + P[9] * sV_norm * TvN_norm
+    )
     return .5 / TvN * Gl / Cm * (1 - erf((vthr - muV) / np.sqrt(2) / sV)), Tv
 
 
