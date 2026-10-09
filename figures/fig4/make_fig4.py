@@ -32,7 +32,7 @@ STYLE = {
 }
 
 DRIVE, B_PA = 2.0, 0.0
-CASES = [(-15.0, "OD"), (-6.25, "Near boundary"), (5.0, "UD")]
+CASES = [(-15.0, "OD"), (-6.25, "Boundary-adjacent"), (5.0, "UD")]
 
 
 def column_title(delta_el, regime):
@@ -45,8 +45,8 @@ def make_fig4():
     mpl.rcParams.update(STYLE)
     ops = operating_points(DRIVE, [d for d, _ in CASES], B_PA)
 
-    fig = plt.figure(figsize=(7.2, 4.75))
-    gs = fig.add_gridspec(2, 3, left=0.075, right=0.885, top=0.885, bottom=0.08,
+    fig = plt.figure(figsize=(7.2, 4.6))
+    gs = fig.add_gridspec(2, 3, left=0.075, right=0.885, top=0.92, bottom=0.08,
                           wspace=0.1, hspace=0.12)
     axes = [[fig.add_subplot(gs[r, c]) for c in range(3)] for r in range(2)]
     for r, pop in enumerate(("e", "i")):
@@ -70,8 +70,6 @@ def make_fig4():
     cb.set_ticks([1, 10, 100])
     cb.set_ticklabels(["1", "10", "100"])
 
-    fig.text(0.48, 0.955, rf"$\nu_{{drive}} = {DRIVE:g}$ Hz, $b = {B_PA:g}$ pA",
-             ha="center", va="bottom", fontsize=7.5, color=INK)
     for r, letter in enumerate(("a.", "b.")):
         axes[r][0].text(-0.27, 1.03, letter, transform=axes[r][0].transAxes, fontsize=9,
                         fontweight="bold", va="bottom", ha="left")
