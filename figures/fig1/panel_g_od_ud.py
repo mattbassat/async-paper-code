@@ -1,14 +1,5 @@
 """Fig. 1g: population rates of an OD (Delta_EL = -10 mV) and a UD (Delta_EL = +10 mV) network,
-before and during the same sinusoidal drive.
-
-Both networks belong to the Delta_EL sweep of Fig. 1c (nu_drive = 2 Hz, b = 0 pA) and are driven
-at 55 Hz, the UD network's empirical resonance (the sampled drive frequency with the largest
-mean E response), with amplitude A = 1.8 Hz from t = 2 s.  Rates are binned at 1 ms and
-averaged over 10 seeds (12-21), the single runs drawn faintly behind; the drive has the same
-phase in every run, so the evoked modulation survives the average.  The dotted lines are the
-baselines (offsets) of a least-squares sinusoid fit at the drive frequency to the averaged rates
-after 3 s.  The drive is redrawn under each pair of traces.
-"""
+before and during the same sinusoidal drive."""
 import numpy as np
 
 from asyncresp.io import load_pickle

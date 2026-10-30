@@ -1,19 +1,11 @@
-"""Fit of the LFP response around the offset of a sinusoidal drive (Fig. 1h).
-
-During the drive the signal is fitted by a sinusoid at the drive frequency (steady state, from
-1 s after the drive onset to its offset).  After the offset it is fitted by a damped sinusoid
-that starts from the steady-state amplitude and phase at the offset time, with the decay time
-tau and the ringing frequency omega_d as the free parameters (nested bounded 1-D searches,
-omega_d within 0.5-1.5 times the drive frequency).  Times are in ms, angular frequencies in
-rad/ms.
-"""
+"""Fit of the LFP response around the offset of a sinusoidal drive (Fig. 1h)."""
 import numpy as np
 from scipy.optimize import minimize_scalar
 
 
 def fit_sinusoid(t, x, period):
-    """Least-squares fit of baseline + amp*cos(omega*t + phase) to (t, x).
-    The phase is in the same absolute-time convention as t."""
+    """Least-squares fit of baseline + amp*cos(omega*t + phase) to (t, x). The phase is in the
+    same absolute-time convention as t."""
     omega = 2 * np.pi / period
     X = np.column_stack([np.cos(omega * t), np.sin(omega * t), np.ones_like(t)])
     coeffs, _, _, _ = np.linalg.lstsq(X, x, rcond=None)
@@ -28,8 +20,8 @@ def damped_sinusoid(t, tau, omega_d, amp, phase0, baseline, t_off):
 
 
 def fit_tau_and_omega_d(t, x, amp, phase0, baseline, t_off, tau_bounds, omega_d_bounds):
-    """Outer bounded search over omega_d; for each omega_d, inner bounded search for the best tau
-    (least squares)."""
+    """Outer bounded search over omega_d; for each omega_d, inner bounded search for the best
+    tau (least squares)."""
     def sse_given_omega_d(omega_d):
         def sse(tau):
             pred = damped_sinusoid(t, tau, omega_d, amp, phase0, baseline, t_off)
@@ -45,7 +37,8 @@ def fit_tau_and_omega_d(t, x, amp, phase0, baseline, t_off, tau_bounds, omega_d_
 
 def analyze_ringdown(t_ms, x, period_ms, t_onset_ms, t_offset_ms, t_end_ms,
                      omega_d_frac_bounds=(0.5, 1.5)):
-    """Steady-state sinusoid fit during the drive, then the damped-sinusoid fit after its offset."""
+    """Steady-state sinusoid fit during the drive, then the damped-sinusoid fit after its
+    offset."""
     t_ms = np.asarray(t_ms, dtype=float)
     x = np.asarray(x, dtype=float)
 

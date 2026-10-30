@@ -1,14 +1,11 @@
-"""Locations of the repository's data and output folders.
-
-All paths are resolved relative to the repository root, so the figure and simulation scripts
-can be run from any working directory.
-"""
+"""Locations of the repository's data and output folders."""
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
 DATA = ROOT / "data"
 SWEEPS = DATA / "sweeps"                    # frequency-response sweeps and mean-field eigenvalues
+SUPP = DATA / "supp"                        # results used only by the supplementary figures
 SYNCHRONY = DATA / "synchrony"              # pairwise spike cross-correlations
 SPONTANEOUS = DATA / "spontaneous"          # spontaneous (undriven) LFP recordings
 DRIVEN = DATA / "driven"                    # driven example simulations with full time series

@@ -1,19 +1,5 @@
-"""Hodgkin-Huxley E-I network driven by afferent Poisson input (Fig. 5).
-
-Network adapted from Carlu et al. (2020, J. Neurophysiol.): 8000 regular-spiking excitatory
-and 2000 fast-spiking inhibitory HH cells (cells.py) with conductance-based synapses and
-random connectivity (connectivity.py, 'CONFIG1').  Each cell receives afferent excitation
-from a population of 8000 Poisson units (connection probability 0.05, Qe = 1.5 nS).
-Integration: exponential Euler, dt = 0.1 ms, Brian2 C++ standalone device (one build
-directory per simulation).
-
-The excitatory resting potential is fixed at El_exc = -70 mV and the inhibitory one is varied;
-Delta_EL = El_exc - El_inh.
-
-  run_driven      sinusoidally modulated drive; sinusoid fits of the population rates
-                  (frequency-response sweep, Fig. 5a-b)
-  run_spontaneous constant drive; inhibitory LFP proxy (spontaneous spectra, Fig. 5c)
-"""
+"""Hodgkin-Huxley E-I network driven by afferent Poisson input (Fig. 5), adapted from Carlu et
+al. (2020)."""
 import os
 import shutil
 
@@ -60,12 +46,7 @@ def _activate_device(build_dir):
 def run_driven(El_inh, osc_period, SEED, build_dir, El_exc=-70, DT=0.1, tstop=5000,
                ext_drive=4.0, Qe_ext=1.5, osc_amplitude=1.0, osc_onset=2500):
     """Network driven at ext_drive (Hz per afferent unit), modulated from osc_onset (ms) on by
-    osc_amplitude*sin(2*pi*(t - osc_onset)/osc_period).
-
-    Returns a dict with the sinusoid fits (amp, phase, offset; Hz, rad, Hz) of the excitatory
-    and inhibitory population rates (1-ms bins, fitted over t >= 3000 ms) and the baseline
-    rates average_exc_rate / average_inh_rate (mean over 500 ms <= t < osc_onset).
-    """
+    osc_amplitude*sin(2*pi*(t - osc_onset)/osc_period)."""
     _activate_device(build_dir)
     start_scope()
     defaultclock.dt = DT * ms
@@ -151,14 +132,8 @@ def run_driven(El_inh, osc_period, SEED, build_dir, El_exc=-70, DT=0.1, tstop=50
 def run_spontaneous(delta_el, SEED, build_dir, tstop=10000.0, El_exc=-70.0, DT=0.1,
                     ext_drive=4.0, Qe_ext=1.5, mon_dt=0.5, n_rec_exc=500, V_ref=-60.0,
                     E_I=-80.0):
-    """Network under constant drive (ext_drive Hz per afferent unit, no modulation) for
-    tstop ms, with El_inh = El_exc - delta_el.
-
-    The inhibitory LFP proxy is lfp_inh(t) = sum_i |G_ie,i(t) (E_I - V_ref)| over the first
-    n_rec_exc excitatory cells (nS*mV), with the I->E conductance G_ie sampled every mon_dt ms
-    and a fixed driving-force reference V_ref -- the same definition as for the AdEx networks.
-    Returns (lfp_inh, rate_exc, rate_inh, t_ms); rates in Hz at every time step.
-    """
+    """Network under constant drive (ext_drive Hz per afferent unit, no modulation) for tstop
+    ms, with El_inh = El_exc - delta_el."""
     _activate_device(build_dir)
     start_scope()
     defaultclock.dt = DT * ms

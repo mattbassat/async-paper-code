@@ -1,35 +1,12 @@
-"""AdEx network simulations that record the synaptic-current LFP proxy.
+"""AdEx network simulations that record the synaptic-current LFP proxy (Mazzoni et al., 2015).
 
-The network is the 8000 RS (excitatory) / 2000 FS (inhibitory) AdEx network used throughout the
-paper (conductance-based exponential synapses, tau_syn = 5 ms, connection probability 0.05,
-Poisson afferent drive onto both populations, Heun integration at dt = 0.1 ms).  Inhibitory and
-excitatory resting potentials are set by Delta E_L = E_L,exc - E_L,inh with E_L,exc = -70 mV.
-
-LFP proxy (Mazzoni et al. 2015): the synaptic conductances of a random sample of 500 RS cells
-are recorded at 0.5 ms and converted to currents at a fixed reference potential V_ref = -60 mV,
-
-    lfp_exc = sum_i |G_E,i (E_E - V_ref)|,   lfp_inh = sum_i |G_I,i (E_I - V_ref)|,
-
-and lfp_absmag = lfp_exc + lfp_inh.  The figures use lfp_inh (the inhibitory-current proxy).
-
-Protocols:
-  * run_spontaneous_sim       constant Poisson drive (spontaneous activity);
-  * run_offset_persistence_sim sinusoidally modulated drive that is switched off at a given
-                               time, to follow the LFP after stimulus offset;
-  * run_ach_cue_sim           constant drive while the RS adaptation increment b is ramped
-                               linearly from b_pre to b_post (an acetylcholine-like cue);
-  * run_spontaneous_spike_sim spontaneous activity recording all spike trains (used for the
-                               pairwise spike-count correlations instead of the LFP).
-
-Every function seeds numpy, Brian2 and a numpy Generator (used for the recorded-cell sample)
-with the same `seed`, so a run is fully determined by its arguments and the code-generation
-target.
+lfp_inh = sum over 500 RS cells of |G_I (E_I - V_ref)|, V_ref = -60 mV, sampled at 0.5 ms.
 """
 import time
 
 import numpy as np
 
-# ---------------------------------------------------------------- network constants
+# --- network constants ---
 N_EXC, N_INH = 8000, 2000
 DT_MS = 0.1                 # integration step (ms)
 MON_DT_MS = 0.5             # sampling of the recorded conductances (2 kHz)
@@ -56,7 +33,7 @@ EL:volt
 EQS_GL = EQS + "gL:siemens\n"
 
 
-# ---------------------------------------------------------------- helpers
+# --- helpers ---
 def lfp_proxy(gE_nS, gI_nS, V_ref_mV=V_REF_MV):
     """LFP proxies (lfp_exc, lfp_inh, lfp_absmag) from recorded conductances (cells x time, nS)."""
     I_E = gE_nS * (EE_MV - V_ref_mV)
@@ -76,13 +53,6 @@ def modulated_drive(t, A, period, offset, t0, t_off):
     return waveform
 
 
-def b_ramp(total_ms, dt_ms, b_pre, b_post, t_start_ms, t_end_ms):
-    """Adaptation increment b(t) (pA): b_pre, then a linear ramp to b_post over [t_start, t_end]."""
-    n = int(round(total_ms / dt_ms))
-    t = np.arange(n) * dt_ms
-    return np.interp(t, [0.0, t_start_ms, t_end_ms, total_ms], [b_pre, b_pre, b_post, b_post])
-
-
 def bin_array(array, BIN, time_array):
     """Average `array` (sampled on `time_array`) in consecutive bins of width BIN (ms)."""
     N0 = int(BIN / (time_array[1] - time_array[0]))
@@ -91,11 +61,7 @@ def bin_array(array, BIN, time_array):
 
 
 def clip_spikes(vm_mat, dt_ms, VT_mV=-50.0, pad_ms=3.0):
-    """Remove spike waveforms from membrane-potential traces (cells x time, mV).
-
-    Samples at or above VT, and the following pad_ms, are replaced by the last subthreshold
-    value, so that spikes do not dominate the population-mean subthreshold potential.
-    """
+    """Remove spike waveforms from membrane-potential traces (cells x time, mV)."""
     pad_samples = max(1, int(round(pad_ms / dt_ms)))
     v = vm_mat.copy()
     mask = v >= VT_mV
@@ -176,14 +142,11 @@ def _model_constants():
     return dict(C=200 * pF, tauw=500 * ms, a=0.0 * nS, I=0. * nA, Ee=0 * mV, Ei=-80 * mV)
 
 
-# ---------------------------------------------------------------- spontaneous activity
+# --- spontaneous activity ---
 def run_spontaneous_sim(delta_EL, seed, nu_0=2.0, b_post=0.0, total_ms=10000.0,
-                        analysis_window=(2000.0, 10000.0), target="numpy", verbose=False):
-    """Spontaneous activity under a constant Poisson drive nu_0 (Hz) onto both populations.
-
-    b_post is the RS adaptation increment (pA).  Records population rates (at dt) and the LFP
-    proxies (at MON_DT_MS); mean rates are reported over `analysis_window`.
-    """
+                        analysis_window=(2000.0, 10000.0), delay_ms=0.0, target="numpy",
+                        verbose=False):
+    """Spontaneous activity under a constant Poisson drive nu_0 (Hz) onto both populations."""
     from brian2 import (PoissonGroup, Synapses, PopulationRateMonitor, StateMonitor, run,
                         ms, nS, Hz)
     rng = _setup(seed, target, DT_MS)
@@ -200,6 +163,9 @@ def run_spontaneous_sim(delta_EL, seed, nu_0=2.0, b_post=0.0, total_ms=10000.0,
     S_22 = Synapses(G_exc, G_exc, on_pre='GsynE_post+=Qe'); S_22.connect('i!=j', p=prbC)   # E->E
     S_ed_in = Synapses(P_ed, G_inh, on_pre='GsynE_post+=Qe_ext'); S_ed_in.connect(p=prbC)  # drive->I
     S_ed_ex = Synapses(P_ed, G_exc, on_pre='GsynE_post+=Qe_ext'); S_ed_ex.connect(p=prbC)  # drive->E
+    if delay_ms > 0:
+        for S in (S_12, S_11, S_21, S_22, S_ed_in, S_ed_ex):
+            S.delay = delay_ms * ms
 
     rec_exc = np.sort(rng.choice(N_EXC, N_REC_EXC, replace=False))
     FRG_inh = PopulationRateMonitor(G_inh)
@@ -217,7 +183,8 @@ def run_spontaneous_sim(delta_EL, seed, nu_0=2.0, b_post=0.0, total_ms=10000.0,
     lfp_exc, lfp_inh, lfp_absmag = lfp_proxy(np.asarray(M_gE.GsynE / nS), np.asarray(M_gI.GsynI / nS))
     out = dict(
         delta_EL=float(delta_EL), seed=int(seed), nu_0=float(nu_0), b_post=float(b_post),
-        total_ms=float(total_ms), dt_fr_ms=float(DT_MS), dt_lfp_ms=float(MON_DT_MS),
+        delay_ms=float(delay_ms), total_ms=float(total_ms), dt_fr_ms=float(DT_MS),
+        dt_lfp_ms=float(MON_DT_MS),
         fr_exc=fr_exc.astype(np.float32), fr_inh=fr_inh.astype(np.float32),
         lfp_absmag=lfp_absmag.astype(np.float32), lfp_exc=lfp_exc.astype(np.float32),
         lfp_inh=lfp_inh.astype(np.float32),
@@ -234,13 +201,7 @@ def run_spontaneous_sim(delta_EL, seed, nu_0=2.0, b_post=0.0, total_ms=10000.0,
 def run_spontaneous_sim_params(seed, delta_EL=0.0, nu_0=2.0, b_post=0.0,
                                gL_exc=10.0, gL_inh=10.0, Qee=1.5, Qei=1.5, Qie=5.0, Qii=5.0,
                                total_ms=10000.0, target="cython", verbose=False):
-    """Spontaneous activity with population-specific leak and quantal conductances.
-
-    gL_exc/gL_inh are the RS/FS leak conductances (nS).  Qee, Qei, Qie, Qii (nS) are the
-    RS->RS, RS->FS, FS->RS and FS->FS quantal conductances; the afferent drive inherits the
-    target-specific excitatory quantal (Qee onto RS, Qei onto FS).  With the default values the
-    network is that of run_spontaneous_sim.
-    """
+    """Spontaneous activity with population-specific leak and quantal conductances."""
     from brian2 import (PoissonGroup, Synapses, PopulationRateMonitor, StateMonitor, run,
                         ms, nS, Hz)
     rng = _setup(seed, target, DT_MS)
@@ -284,16 +245,11 @@ def run_spontaneous_sim_params(seed, delta_EL=0.0, nu_0=2.0, b_post=0.0,
     return out
 
 
-# ---------------------------------------------------------------- driven, then switched off
+# --- driven, then switched off ---
 def run_offset_persistence_sim(delta_EL, seed, freq_hz, A, nu_0=2.0, b_post=0.0,
                                oscillation_onset=2000.0, oscillation_offset=5000.0,
-                               total_ms=8000.0, target="numpy", verbose=False):
-    """Drive nu_0 + A*sin(2 pi f (t - onset)) between onset and offset (ms), then nu_0 again.
-
-    The simulation continues to total_ms, so that the LFP after stimulus offset can be compared
-    with the steady-state driven response.  Records the population rates (1 ms bins), the
-    spike-clipped population-mean RS membrane potential and the LFP proxies (MON_DT_MS).
-    """
+                               total_ms=8000.0, delay_ms=0.0, target="numpy", verbose=False):
+    """Drive nu_0 + A*sin(2 pi f (t - onset)) between onset and offset (ms), then nu_0 again."""
     from brian2 import (PoissonGroup, Synapses, PopulationRateMonitor, StateMonitor,
                         TimedArray, run, ms, mV, nS, Hz)
     rng = _setup(seed, target, DT_MS)
@@ -317,6 +273,9 @@ def run_offset_persistence_sim(delta_EL, seed, freq_hz, A, nu_0=2.0, b_post=0.0,
     G_aff = PoissonGroup(N_EXC, rates='rate_array(t)')
     S_aff_ex = Synapses(G_aff, G_exc, on_pre='GsynE_post+=Qe_ext'); S_aff_ex.connect(p=prbC)  # drive->E
     S_aff_in = Synapses(G_aff, G_inh, on_pre='GsynE_post+=Qe_ext'); S_aff_in.connect(p=prbC)  # drive->I
+    if delay_ms > 0:
+        for S in (S_12, S_11, S_21, S_22, S_aff_in, S_aff_ex):
+            S.delay = delay_ms * ms
 
     rec_exc = np.sort(rng.choice(N_EXC, N_REC_EXC, replace=False))
     FRG_exc = PopulationRateMonitor(G_exc)
@@ -344,7 +303,7 @@ def run_offset_persistence_sim(delta_EL, seed, freq_hz, A, nu_0=2.0, b_post=0.0,
         print(f"  driven dEL={delta_EL:+g} f={freq_hz:g} Hz seed={seed} ({sim_time:.0f} s)", flush=True)
 
     return dict(
-        nu_0=float(nu_0), b_post=float(b_post),
+        nu_0=float(nu_0), b_post=float(b_post), delay_ms=float(delay_ms),
         EL_exc=float(EL_EXC_MV), EL_inh=float(EL_inh), delta_EL=float(delta_EL),
         seed=int(seed), freq_hz=float(freq_hz), period_ms=float(period_ms), A=float(A),
         oscillation_onset=float(oscillation_onset), oscillation_offset=float(oscillation_offset),
@@ -355,91 +314,9 @@ def run_offset_persistence_sim(delta_EL, seed, freq_hz, A, nu_0=2.0, b_post=0.0,
         lfp_inh=lfp_inh.astype(np.float32), sim_time_s=sim_time)
 
 
-# ---------------------------------------------------------------- ACh-like cue (b ramp)
-ACH_PRECUE_WINDOW = (1000.0, 2500.0)     # ms, b = b_pre
-ACH_CUE = (2500.0, 3500.0)               # ms, linear ramp b_pre -> b_post
-ACH_POSTCUE_WINDOW = (3500.0, 5000.0)    # ms, b = b_post
-ACH_TOTAL_MS = 5000.0
-ACH_BUFFER_MS = 1200.0                   # extra simulated time after the analysed trial, so that
-                                         # time-frequency estimates are not affected by the trace end
-
-
-def run_ach_cue_sim(seed, delta_EL, nu_0, b_pre, b_post, t_cue_start_ms=ACH_CUE[0],
-                    t_cue_end_ms=ACH_CUE[1], total_ms=ACH_TOTAL_MS, sim_buffer_ms=ACH_BUFFER_MS,
-                    target="numpy", verbose=False):
-    """Constant drive nu_0 while the RS adaptation increment b(t) ramps from b_pre to b_post.
-
-    b(t) (a TimedArray at dt) is applied in the RS reset (w += b(t)), modelling the reduction of
-    spike-frequency adaptation by acetylcholine.  The run lasts total_ms + sim_buffer_ms; b and
-    the drive stay constant over the buffer.
-    """
-    from brian2 import (PoissonGroup, Synapses, PopulationRateMonitor, StateMonitor,
-                        TimedArray, run, ms, nS, pA, Hz)
-    rng = _setup(seed, target, DT_MS)
-    ns = _model_constants()
-    C, tauw, a, I, Ee, Ei = (ns[k] for k in ("C", "tauw", "a", "I", "Ee", "Ei"))
-    gL = 10 * nS
-    sim_total_ms = total_ms + sim_buffer_ms
-
-    n = int(round(sim_total_ms / DT_MS))
-    drive_of_t = TimedArray(np.full(n, nu_0, dtype=float) * Hz, dt=DT_MS * ms)
-    b_of_t = TimedArray(b_ramp(sim_total_ms, DT_MS, b_pre, b_post, t_cue_start_ms, t_cue_end_ms) * pA,
-                        dt=DT_MS * ms)
-
-    G_inh, G_exc = _populations(EQS, EL_EXC_MV - delta_EL, EL_EXC_MV, None,
-                                exc_reset="vm = Vr; w += b_of_t(t)")
-    P_ed = PoissonGroup(N_EXC, rates='drive_of_t(t)')
-
-    Qi, Qe, Qe_ext, prbC = 5.0 * nS, 1.5 * nS, 1.5 * nS, 0.05
-    S_12 = Synapses(G_inh, G_exc, on_pre='GsynI_post+=Qi'); S_12.connect('i!=j', p=prbC)   # I->E
-    S_11 = Synapses(G_inh, G_inh, on_pre='GsynI_post+=Qi'); S_11.connect('i!=j', p=prbC)   # I->I
-    S_21 = Synapses(G_exc, G_inh, on_pre='GsynE_post+=Qe'); S_21.connect('i!=j', p=prbC)   # E->I
-    S_22 = Synapses(G_exc, G_exc, on_pre='GsynE_post+=Qe'); S_22.connect('i!=j', p=prbC)   # E->E
-    S_ed_in = Synapses(P_ed, G_inh, on_pre='GsynE_post+=Qe_ext'); S_ed_in.connect(p=prbC)  # drive->I
-    S_ed_ex = Synapses(P_ed, G_exc, on_pre='GsynE_post+=Qe_ext'); S_ed_ex.connect(p=prbC)  # drive->E
-
-    rec_exc = np.sort(rng.choice(N_EXC, N_REC_EXC, replace=False))
-    FRG_inh = PopulationRateMonitor(G_inh)
-    FRG_exc = PopulationRateMonitor(G_exc)
-    M_gE = StateMonitor(G_exc, 'GsynE', record=rec_exc, dt=MON_DT_MS * ms)
-    M_gI = StateMonitor(G_exc, 'GsynI', record=rec_exc, dt=MON_DT_MS * ms)
-
-    t0 = time.time()
-    run(sim_total_ms * ms)
-    sim_time = time.time() - t0
-
-    fr_exc = np.asarray(FRG_exc.rate / Hz)
-    fr_inh = np.asarray(FRG_inh.rate / Hz)
-    t_fr = np.arange(len(fr_exc)) * DT_MS
-    lfp_exc, lfp_inh, lfp_absmag = lfp_proxy(np.asarray(M_gE.GsynE / nS), np.asarray(M_gI.GsynI / nS))
-    out = dict(
-        seed=int(seed), nu_0=float(nu_0), delta_EL=float(delta_EL),
-        b_pre=float(b_pre), b_post=float(b_post),
-        t_cue_start_ms=float(t_cue_start_ms), t_cue_end_ms=float(t_cue_end_ms),
-        total_ms=float(total_ms), sim_total_ms=float(sim_total_ms),
-        dt_fr_ms=float(DT_MS), dt_lfp_ms=float(MON_DT_MS),
-        fr_exc=fr_exc.astype(np.float32), fr_inh=fr_inh.astype(np.float32),
-        lfp_absmag=lfp_absmag.astype(np.float32), lfp_exc=lfp_exc.astype(np.float32),
-        lfp_inh=lfp_inh.astype(np.float32),
-        mean_exc_rate_pre=_window_mean(fr_exc, t_fr, *ACH_PRECUE_WINDOW),
-        mean_inh_rate_pre=_window_mean(fr_inh, t_fr, *ACH_PRECUE_WINDOW),
-        mean_exc_rate_post=_window_mean(fr_exc, t_fr, *ACH_POSTCUE_WINDOW),
-        mean_inh_rate_post=_window_mean(fr_inh, t_fr, *ACH_POSTCUE_WINDOW),
-        sim_time_s=sim_time)
-    if verbose:
-        print(f"  ACh cue b {b_pre:g}->{b_post:g} seed={seed}: E rate pre {out['mean_exc_rate_pre']:.2f} Hz, "
-              f"post {out['mean_exc_rate_post']:.2f} Hz ({sim_time:.0f} s)", flush=True)
-    return out
-
-
-# ---------------------------------------------------------------- spike trains (synchrony)
 def run_spontaneous_spike_sim(delta_EL, seed, nu_0=2.0, b_val=0.0, total_ms=5000.0,
                               t_trim_ms=500.0, target="numpy"):
-    """Spontaneous activity (5 s) recording all spike times, for spike-count correlations.
-
-    Returns {'inh': {i: spike times}, 'exc': {i: spike times}} (Brian2 quantities), keeping
-    only spikes at t >= t_trim_ms, plus the mean population rates after t_trim_ms.
-    """
+    """Spontaneous activity (5 s) recording all spike times, for spike-count correlations."""
     from brian2 import (start_scope, defaultclock, set_device, prefs, PoissonGroup, Synapses,
                         SpikeMonitor, PopulationRateMonitor, run, ms, nS, Hz)
     from brian2 import seed as brian_seed

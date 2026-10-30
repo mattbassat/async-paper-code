@@ -1,20 +1,4 @@
-"""
-First-order mean field of the AdEx network (di Volo et al., 2019; Zerlaut et al., 2018).
-
-The model describes the mean excitatory and inhibitory firing rates (nu_e, nu_i) and the mean
-excitatory adaptation current w.  This module provides the semi-analytic transfer function,
-the stationary fixed point, the Jacobian of the two-dimensional rate dynamics (adaptation held
-at its stationary value), its eigenvalues, and helpers for integrating the rate equations.
-
-Note on tau_V: the inhibitory contribution to the autocorrelation time tau_V is weighted by
-(U_i * T_i)^2.  An earlier version of this code weighted it by (Q_i * U_i)^2; the two are
-identical whenever the excitatory and inhibitory synaptic time constants are equal, as they
-are for every network in the paper.
-
-Typical use:
-    fp = fixed_point(ext=2.0, ELe=-70., ELi=-60., b=0.)   # nu_e*, nu_i*, w*, T
-    ei = eigen(fp)                                         # tr, det, damping ratio, eigenvalues
-"""
+"""First-order mean field of the AdEx network (di Volo et al., 2019; Zerlaut et al., 2018)."""
 import numpy as np
 from scipy.special import erf
 
@@ -68,8 +52,8 @@ def _rates(fe, fi, w, ext, ELe, ELi, Qee, Qei, gLe, gLi):
 
 def fixed_point(ext, ELe=-70., ELi=-70., b=0., Qee=1.5e-9, Qei=1.5e-9, gLe=10e-9, gLi=10e-9,
                 relax_s=5.0, dt=5e-4, newton=10):
-    """stationary (nu_e*, nu_i*): relax the mean field, then polish with Newton.
-    Adaptation is adiabatic (tau_w = 500 ms >> T): w* = b * tau_w * nu_e*."""
+    """stationary (nu_e*, nu_i*): relax the mean field, then polish with Newton. Adaptation is
+    adiabatic (tau_w = 500 ms >> T): w* = b * tau_w * nu_e*."""
     ext, ELe, ELi, b = np.broadcast_arrays(*[np.atleast_1d(np.asarray(v, float))
                                              for v in (ext, ELe, ELi, b)])
     n = ext.size
@@ -153,7 +137,7 @@ def relax_trace(ext, ELe=-70., ELi=-70., b=0., Qee=1.5e-9, Qei=1.5e-9, gLe=10e-9
                 fe0=0.0, fi0=0.0, w0=0.0, tmax=1.5, dt=1e-4):
     """the first-order mean field run forward in time from (fe0, fi0, w0) under a constant
     external drive: the adaptation builds up over tau_w and the rates settle on the fixed
-    point.  Returns t (s), nu_e, nu_i, w."""
+    point."""
     n = int(tmax / dt)
     fe, fi, w, T = float(fe0), float(fi0), float(w0), 0.01
     bA = b * 1e-12
@@ -171,8 +155,8 @@ def relax_trace(ext, ELe=-70., ELi=-70., b=0., Qee=1.5e-9, Qei=1.5e-9, gLe=10e-9
 
 def drive_trace(ext_of_t, ELe=-70., ELi=-70., b=0., Qee=1.5e-9, Qei=1.5e-9, gLe=10e-9,
                 gLi=10e-9, fe0=1.0, fi0=5.0, w0=0.0, tmax=4.0, dt=1e-4):
-    """the first-order mean field under a time-varying external drive nu_drive(t) (Hz), given
-    as a callable of t in seconds.  Returns t (s), nu_e, nu_i, w, nu_drive."""
+    """the first-order mean field under a time-varying external drive nu_drive(t) (Hz), given as
+    a callable of t in seconds. Returns t (s), nu_e, nu_i, w, nu_drive."""
     n = int(tmax / dt)
     fe, fi, w, T = float(fe0), float(fi0), float(w0), 0.01
     bA = b * 1e-12

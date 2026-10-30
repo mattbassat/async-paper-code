@@ -1,10 +1,5 @@
 """Data for Fig. 5: the frequency-response sweep of the Hodgkin-Huxley network and the
-spontaneous LFP spectra of four of its networks.
-
-The sweep holds 13 values of Delta_EL x 34 input frequencies x 10 seeds (nu_drive = 4 Hz,
-A = 1 Hz, 5 s per run).  The spontaneous runs are 10 s of undriven activity with the LFP proxy
-lfp_inh = sum |G_ie (E_I - V_ref)| over 500 RS cells, sampled at 2 kHz, seeds 300-309.
-"""
+spontaneous LFP spectra of four of its networks."""
 import numpy as np
 import pandas as pd
 
@@ -23,7 +18,8 @@ LOW_FMAX = 10.0                              # a resonance is only counted above
 
 
 def sweep():
-    """The frequency-response sweep as a DataFrame, with Delta_EL (mV) and input frequency f (Hz)."""
+    """The frequency-response sweep as a DataFrame, with Delta_EL (mV) and input frequency f
+    (Hz)."""
     df = pd.DataFrame(load_pickle(SWEEP_FILE))
     df["delta_EL"] = df.El_exc - df.EL_inh
     df["f"] = (1000 / df.period).round(6)

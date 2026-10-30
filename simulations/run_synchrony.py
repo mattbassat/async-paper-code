@@ -1,23 +1,4 @@
-"""Pairwise spike-count correlations of the spontaneous AdEx network vs Delta E_L (Fig. 1i).
-
-For nu_drive = 2 Hz, b = 0 and Delta E_L = -15, -10, ..., +15 mV, 10 networks (seeds 100-109)
-are simulated for 5 s of spontaneous activity.  For each run, 200 FS and 800 RS neurons are
-sampled; their spikes in the window 500-5000 ms are counted in 5 ms bins (bins anchored at
-500 ms), neurons with fewer than 3 spikes (or constant counts) are excluded, and CC is the mean
-Pearson correlation over all pairs of the remaining neurons (Renart et al. 2010; Ecker et al.
-2010).  Per Delta E_L the file stores the mean (CC), SD (CC_sd) and per-seed values (CC_all).
-
-Output: data/synchrony/regimes_cc_r2b0.pkl, a dict {Delta E_L (int, mV): {CC, CC_sd, CC_all,
-EL_inh, EL_exc, delta_EL, b_val, rate}}.
-
-The simulations use the Brian2 numpy target and are deterministic given the seed.  The neuron
-sample, however, is drawn from an unseeded generator, as in the computation of the stored values,
-so the CC of a re-run differs from the stored value by the sampling error of the 1000-neuron
-sample (of order 1e-4 per run), although the spike trains are identical.  Runtime: about 1 min per run on one core (70 runs).
-
-    python simulations/run_synchrony.py --workers 2
-    python simulations/run_synchrony.py --check
-"""
+"""Pairwise spike-count correlations of the spontaneous AdEx network vs Delta E_L (Fig. 1i)."""
 import argparse
 import os
 import pickle
@@ -31,8 +12,8 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from asyncresp.paths import SYNCHRONY            # noqa: E402
-from simulations import adex_lfp                 # noqa: E402
+from asyncresp.paths import SYNCHRONY
+from simulations import adex_lfp
 
 OUT_FILE = SYNCHRONY / "regimes_cc_r2b0.pkl"
 DELTA_EL = [-15, -10, -5, 0, 5, 10, 15]
@@ -41,7 +22,7 @@ NU_DRIVE, B_VAL, EL_EXC = 2, 0, -70
 T_START_MS, T_END_MS = 500.0, 5000.0
 
 
-# ---------------------------------------------------------------- spike-count correlation
+# --- spike-count correlation ---
 def _spike_times_ms(train):
     """Spike times in ms from a Brian2 quantity array (or a plain array already in ms)."""
     try:
@@ -55,13 +36,7 @@ def _spike_times_ms(train):
 
 def compute_cc(inh_spike_trains, exc_spike_trains, bin_width_ms=5.0, t_start_ms=T_START_MS,
                t_end_ms=T_END_MS, n_sample_inh=200, n_sample_exc=800, min_spikes=3, rng=None):
-    """Mean pairwise Pearson correlation of binned spike counts.
-
-    n_sample_inh FS and n_sample_exc RS neurons are drawn without replacement (rng: a numpy
-    Generator or seed; None = unseeded) and binned once on bins anchored at t_start_ms, so that
-    all pairs share the same bins; neurons with fewer than min_spikes spikes in the window or
-    constant counts are excluded; all pairs of the remaining neurons are averaged.
-    """
+    """Mean pairwise Pearson correlation of binned spike counts."""
     rng = rng if isinstance(rng, np.random.Generator) else np.random.default_rng(rng)
     bins = np.arange(t_start_ms, t_end_ms + bin_width_ms, bin_width_ms)
     counts = []
@@ -87,7 +62,7 @@ def compute_cc(inh_spike_trains, exc_spike_trains, bin_width_ms=5.0, t_start_ms=
     return float(np.mean(r_all[good])) if good.any() else np.nan
 
 
-# ---------------------------------------------------------------- runs
+# --- runs ---
 def run_one(args):
     delta_EL, seed = args
     sim = adex_lfp.run_spontaneous_spike_sim(delta_EL=delta_EL, seed=seed, nu_0=NU_DRIVE,

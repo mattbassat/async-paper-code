@@ -1,18 +1,10 @@
-"""Synaptic and connectivity parameters of the HH network, and the recurrent connections.
-
-Adapted from Carlu et al. (2020, J. Neurophysiol.).  Configuration 'CONFIG1' matches the AdEx
-network of the rest of the paper: 10,000 neurons (20% inhibitory), connection probability 0.05,
-exponential conductance synapses with Tsyn = 5 ms, Qe = 1.5 nS (Erev = 0 mV) and Qi = 5 nS
-(Erev = -80 mV).  Units: Q in nS, Tsyn in ms, Erev in mV.
-"""
+"""Synaptic and connectivity parameters of the HH network (adapted from Carlu et al., 2020)."""
 import numpy as np
 from brian2 import Synapses, nS, seed
 
 
 def get_connectivity_and_synapses_matrix(NAME='CONFIG1', number=2):
-    """2x2 object array M of synapse dictionaries, M[pre, post] (0 = exc, 1 = inh).
-    M[0, 0] also holds the network size 'Ntot', the inhibitory fraction 'gei' and the
-    afferent drive 'ext_drive' (Hz)."""
+    """2x2 object array M of synapse dictionaries, M[pre, post] (0 = exc, 1 = inh)."""
     if NAME != 'CONFIG1':
         raise ValueError(f"unknown network configuration {NAME!r}")
     M = np.empty((number, number), dtype=object)
@@ -29,14 +21,7 @@ def get_connectivity_and_synapses_matrix(NAME='CONFIG1', number=2):
 
 
 def build_up_recurrent_connections_for_2_pop(Pops, syn_conn_matrix, SEED=1):
-    """Random recurrent E->E, E->I, I->E and I->I connections (no autapses).
-
-    The random number generator is re-seeded with SEED before the connections are drawn (as in
-    Carlu et al. 2020), so every random draw made after this call (the connectivity, and in
-    the network scripts also the afferent connections and Poisson input) follows this fixed
-    seed; the simulation seed enters through the random initial membrane potentials drawn
-    before it.
-    """
+    """Random recurrent E->E, E->I, I->E and I->I connections (no autapses)."""
     seed(SEED)
     exc_neurons, inh_neurons = Pops
     P = syn_conn_matrix

@@ -1,7 +1,4 @@
-"""Fig. 1c-d: frequency response of the AdEx network.  Mean (+/- SD over seeds) amplitude of the
-evoked E rate modulation against the drive frequency f, for the Delta_EL sweep (c) and for the
-leak-conductance, adaptation and E->E / E->I synaptic-strength sweeps (d).  Colours run from
-dark (low-pass, OD side) to light (resonant, UD side) in every sweep."""
+"""Fig. 1c-d: frequency response of the AdEx network."""
 import numpy as np
 import seaborn as sns
 from matplotlib.patches import Patch

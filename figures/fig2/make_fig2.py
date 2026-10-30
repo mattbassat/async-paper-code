@@ -1,13 +1,4 @@
-"""Fig. 2: the low-dimensional mean field explains the spiking network.
-
-    a  mean-field schematic and equations          d  eigenvalues and balance metric B vs ΔEL
-    b  mean field vs SNN rates under a drive change e  SNN response maps with f_eig and boundary
-    c  phase planes and relaxation, OD vs UD       f  SNN resonance f_peak / f0 vs B
-
-Every panel is placed in a box of fixed size (inches) so that nothing is stretched.
-
-    python figures/fig2/make_fig2.py   ->  output/fig2.png, output/fig2.pdf
-"""
+"""Fig. 2: the low-dimensional mean field explains the spiking network."""
 import sys
 from pathlib import Path
 
@@ -15,18 +6,18 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import matplotlib as mpl                                   # noqa: E402
+import matplotlib as mpl
 mpl.use("Agg")
-import matplotlib.pyplot as plt                            # noqa: E402
+import matplotlib.pyplot as plt
 
-from asyncresp.paths import output_path                    # noqa: E402
-from fig2_common import style, C_OD, C_UD                  # noqa: E402
-from panel_schematic import draw_schematic                 # noqa: E402
-from panel_mf_vs_snn import draw_mf_vs_snn                 # noqa: E402
-from panel_phase_plane import draw_phase, draw_relaxation  # noqa: E402
-from panels_stability import draw_eigen, draw_heatmap, draw_resonance_vs_balance  # noqa: E402
+from asyncresp.paths import output_path
+from fig2_common import style, C_OD, C_UD
+from panel_schematic import draw_schematic
+from panel_mf_vs_snn import draw_mf_vs_snn
+from panel_phase_plane import draw_phase, draw_relaxation
+from panels_stability import draw_eigen, draw_heatmap, draw_resonance_vs_balance
 
-# ---- geometry, in inches -------------------------------------------------------------
+# --- geometry, in inches ---
 W_L, W_R = 4.60, 6.26                                      # left / right column widths
 GAP_W = 0.62
 MARGIN = dict(left=0.62, right=0.12, top=0.42, bottom=0.40)

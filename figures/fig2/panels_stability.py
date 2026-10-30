@@ -1,14 +1,4 @@
-"""Fig. 2d-f: mean-field stability along the ΔEL axis and its match to the spiking network.
-
-d  eigenvalues of the mean-field Jacobian (top) and the balance metric B (bottom) vs ΔEL,
-   for the three parameter sets; the dashed line marks the node/focus boundary (B = 1).
-e  SNN response amplitude of the E population to sinusoidal drive, on the (ΔEL, input
-   frequency) grid, with the mean-field eigenfrequency |Im lambda| / 2 pi and the boundary.
-   Circles: the input frequency of maximal response, for UD networks whose maximum lies above
-   FMIN_RES (an empirical resonance).
-f  those SNN resonance frequencies, normalised by the mean-field natural frequency f0, against
-   B, with the parameter-free mean-field prediction f_eig / f0 = sqrt(1 - B).
-"""
+"""Fig. 2d-f: mean-field stability along the ΔEL axis and its match to the spiking network."""
 import numpy as np
 import pandas as pd
 import matplotlib.patheffects as pe
@@ -26,9 +16,9 @@ from fig2_common import (CONDITIONS, SH_OD, SH_UD, C_RE, C_IM, C_BAL, B_SYM, B_C
 DEL_TICKS = [-15, -10, -5, 0, 5, 10, 15]
 
 
-# ----------------------------------------------------------------- d: eigenvalues and B
+# --- d: eigenvalues and B ---
 def draw_eigen(axes_top, axes_bot, lo=-17.0, hi=17.0):
-    """Top: real and imaginary parts of the two eigenvalues (s^-1).  Bottom: B (log scale)."""
+    """Top: real and imaginary parts of the two eigenvalues (s^-1). Bottom: B (log scale)."""
     for axt, axb, (tag, ext, b, title) in zip(axes_top, axes_bot, CONDITIONS):
         ei = eigen_sweep(ext, b)
         d, dc = ei["dEL"], ei["dcrit"]
@@ -76,7 +66,7 @@ def draw_eigen(axes_top, axes_bot, lo=-17.0, hi=17.0):
                      path_effects=halo)
 
 
-# ----------------------------------------------------------------- e: response maps
+# --- e: response maps ---
 IMPULSE_FILES = {"r2b0": "impulse_results_r2b0a1_final.pkl",
                  "r4b0": "impulse_results_r4b0a1_final.pkl",
                  "r4b60": "impulse_results_r4b60a1_final.pkl"}
@@ -93,7 +83,7 @@ def load_impulse(tag):
 
 def draw_heatmap(axes, cax, fmin=0.5):
     """The three response maps on one absolute colour scale, with the mean-field eigenfrequency
-    and boundary on top.  Returns the legend handles."""
+    and boundary on top. Returns the legend handles."""
     data = []
     for tag, ext, b, title in CONDITIONS:
         agg = load_impulse(tag)
@@ -140,7 +130,7 @@ def draw_heatmap(axes, cax, fmin=0.5):
                    label=f"MF boundary ({B_SYM} = {B_CRIT:g})")]
 
 
-# ----------------------------------------------------------------- f: resonance vs B
+# --- f: resonance vs B ---
 SETCOL = {"r2b0": "#2a78d6", "r4b0": "#eb6834", "r4b60": "#1baf7a"}
 SETMK = {"r2b0": "o", "r4b0": "s", "r4b60": "^"}
 SNN_MS = 6.2

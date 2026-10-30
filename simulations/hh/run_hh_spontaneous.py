@@ -1,20 +1,4 @@
-"""Spontaneous activity of the Hodgkin-Huxley network for the LFP spectra of Fig. 5c.
-
-The network of network.run_spontaneous (8000 RS / 2000 FS HH cells, El_exc = -70 mV) is run for
-10 s under constant afferent Poisson drive (nu_drive = 4 Hz, no modulation) for
-Delta_EL = El_exc - El_inh = -20, -10, 0, +10 mV and seeds 300-309.  The inhibitory LFP proxy
-lfp_inh = sum_i |G_ie,i (E_I - V_ref)| over 500 RS cells (E_I = -80 mV, V_ref = -60 mV) is
-sampled at 2 kHz (dt_lfp_ms = 0.5).
-
-Output: data/spontaneous/hh/hh_spont_{m20.0,m10.0,p0.0,p10.0}_{300..309}.pkl, one dict per run
-with lfp_inh (float32) and dt_lfp_ms (the fields read by the figure), plus the run parameters
-and the population rates rate_exc, rate_inh, t_ms (float32, every 0.1 ms).
-
-Runtime: about 3-3.5 min per run on one core, i.e. about 2.2 CPU hours for the 40 runs.
-
-    python simulations/hh/run_hh_spontaneous.py --workers 4
-    python simulations/hh/run_hh_spontaneous.py --check
-"""
+"""Spontaneous activity of the Hodgkin-Huxley network for the LFP spectra of Fig. 5c."""
 import argparse
 import multiprocessing as mp
 import os
@@ -29,7 +13,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from asyncresp.paths import SPONTANEOUS  # noqa: E402
+from asyncresp.paths import SPONTANEOUS
 
 OUT_DIR = SPONTANEOUS / "hh"
 

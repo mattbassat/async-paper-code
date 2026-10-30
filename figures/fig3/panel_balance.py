@@ -1,10 +1,4 @@
-"""Fig. 3b: normalised slow-input E responses against the balance metric B.
-
-B = tr(J*)^2 / (4 det J*) = zeta^2 of the mean-field Jacobian at the fixed point; B > 1 is the
-overdamped (OD) and B < 1 the underdamped (UD) regime.  SNN responses of the three parameter
-sets (markers) are shown with the analytical prediction of Eq. 4 (lines), each normalised by
-its own maximum.
-"""
+"""Fig. 3b: normalised slow-input E responses against the balance metric B."""
 import numpy as np
 
 from asyncresp.style import INK, INK2
@@ -17,19 +11,14 @@ B_LIM = (0.033, 2.25)
 
 
 def analytic_vs_balance(slow, e):
-    """Eq. 4 E response against the balance metric, normalised by its maximum.
-
-    With det = tr^2 / (4B), Eq. 4 reads H_e(0) = -4 D B / (T (A + D)^2) - 1.  The prefactor
-    varies with Delta_EL, so this is one curve per parameter set rather than a single
-    parameter-free curve.  The curve is restricted to the Delta_EL range covered by the SNN
-    points, and normalised by its own peak on the dense grid (as the points are by theirs)."""
+    """Eq. 4 E response against the balance metric, normalised by its maximum."""
     m = (e.delta_EL >= slow.delta_EL.min()) & (e.delta_EL <= slow.delta_EL.max())
     bal, he0 = (e.zeta[m] ** 2).values, e.He0[m].values
     return bal, he0 / he0.max()
 
 
 def draw_balance(ax, data, slow):
-    """Panel b.  `data[k]` = (agg, e) and `slow[k]` = slow-input table of parameter set k."""
+    """Panel b. `data[k]` = (agg, e) and `slow[k]` = slow-input table of parameter set k."""
     lo, hi = B_LIM
     ax.set_xscale("log")
     ax.axvspan(1.0, hi, color=OD_COL, linewidth=0, zorder=0)

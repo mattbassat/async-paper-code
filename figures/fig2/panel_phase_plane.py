@@ -1,10 +1,5 @@
-"""Fig. 2c: phase planes and relaxation of the linearised mean field for an OD (stable node)
-and a UD (stable focus) network.
-
-The mean field (nu_drive = 2 Hz, b = 0) is linearised about its fixed point.  Top: trajectories
-launched from a ring of unit perturbations, with the nullclines of the linearised flow.
-Bottom: relaxation of nu_e after a pure excitatory perturbation.
-"""
+"""Fig. 2c: phase planes and relaxation of the linearised mean field for an OD (stable node) and
+a UD (stable focus) network."""
 import numpy as np
 import matplotlib.patheffects as pe
 from matplotlib.lines import Line2D
@@ -17,10 +12,8 @@ from fig2_common import B_SYM
 
 def linear_system(dEL, ext=2.0, b=0.0):
     """Jacobian of the mean field at its fixed point, in rate units rescaled so that its two
-    off-diagonal elements are equal in magnitude (S = diag(r_e, r_i), r_i / r_e = sqrt(|C/B|);
-    M = S^-1 J S).  The eigenvalues are unchanged; the rescaling only removes the arbitrary
-    choice of units, which would otherwise stretch the OD portrait by the ratio of the two
-    populations' rates."""
+    off-diagonal elements are equal in magnitude (S = diag(r_e, r_i), r_i / r_e =
+    sqrt(|C/B|); M = S^-1 J S)."""
     fp = MF.fixed_point(ext=ext, ELe=-70., ELi=-70. - dEL, b=b)
     ei = MF.eigen(fp)
     A, B, C, D = (float(ei[k][0]) for k in "ABCD")

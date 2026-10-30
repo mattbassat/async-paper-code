@@ -1,10 +1,4 @@
-"""Slow-input responses of the spiking network and the matching mean-field quantities.
-
-For each of the three parameter sets (nu_drive, b) the spiking-network (SNN) responses to a
-sinusoidal modulation of the drive are averaged over seeds per (Delta_EL, input frequency), and
-the stored mean-field Jacobian at the fixed point is used to compute the damping ratio and the
-analytical slow-input (f -> 0) responses of Eq. 4.
-"""
+"""Slow-input responses of the spiking network and the matching mean-field quantities."""
 import numpy as np
 import pandas as pd
 
@@ -28,20 +22,7 @@ SETS = {
 
 
 def load_set(key):
-    """Seed-averaged SNN responses and mean-field table of one parameter set.
-
-    The main frequency sweep (`*_final.pkl`) is complemented by additional Delta_EL values
-    simulated at the slow-input frequency only (`*_extra.pkl`).
-
-    Returns (agg, e): `agg` has one row per (delta_EL, f) with the mean and SD over seeds of the
-    E and I response amplitudes (Hz); `e` is the mean-field table on a dense Delta_EL grid, with
-    the Jacobian entries A = d(dnu_e)/dnu_e, B = d(dnu_e)/dnu_i, C = d(dnu_i)/dnu_e,
-    D = d(dnu_i)/dnu_i and the time constant T, to which are added
-        det  = AD - BC
-        zeta = -(A + D) / (2 sqrt(det))       damping ratio (balance metric B = zeta^2)
-        He0  = -D / (T det) - 1               Eq. 4, E response to a 1 Hz slow modulation
-        Hi0  =  C / (T det)                   Eq. 4, I response
-    """
+    """Seed-averaged SNN responses and mean-field table of one parameter set."""
     s = SETS[key]
     imp = pd.concat([pd.DataFrame(pd.read_pickle(SWEEPS / s["imp"])),
                      pd.DataFrame(pd.read_pickle(SWEEPS / s["imp"].replace("_final.pkl",

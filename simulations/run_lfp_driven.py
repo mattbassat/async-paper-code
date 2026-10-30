@@ -1,26 +1,4 @@
-"""Over-damped vs under-damped AdEx networks driven at 55 Hz (Fig. 1g-h).
-
-Two networks, nu_drive = 2 Hz, b = 0: Delta E_L = -10 mV (over-damped, OD) and +10 mV
-(under-damped, UD), both driven at 55 Hz (the input frequency with the largest excitatory
-response of the UD network in the Delta E_L sweep) with modulation amplitude A = 1.8 Hz.
-
-  g   Fig. 1g: the drive is modulated from t = 2 s to the end of a 5 s run (the protocol of
-      the frequency-response sweeps); population rates, fitted responses, spikes and LFP proxy.
-      Seeds 12-21 -> data/driven/od_ud_55hz/g_{m10,p10}_f55_<seed>.pkl
-  h   Fig. 1h: the modulation is on from 2 s to 5 s and then switched off; the run continues to
-      8 s so that the LFP after stimulus offset can be followed.  Seed 300
-      -> data/driven/od_ud_55hz/h_{m10,p10}_f55_300.pkl
-
-Code-generation targets are those of the stored files (cython for g, numpy for h).  The
-simulated rates and LFP are reproduced exactly; the fitted g responses (linear least squares)
-can differ from the stored ones in the last bit depending on the BLAS kernel selected for the
-CPU (with OpenBLAS, OPENBLAS_CORETYPE=Prescott reproduces the stored values bit for bit).
-Runtime: g about 0.5-1 min per run (20 runs), h about 1-1.5 min per run (2 runs), one core.
-
-    python simulations/run_lfp_driven.py h
-    python simulations/run_lfp_driven.py g --workers 2
-    python simulations/run_lfp_driven.py g --check
-"""
+"""Over-damped vs under-damped AdEx networks driven at 55 Hz (Fig. 1g-h)."""
 import argparse
 import os
 import pickle
@@ -34,7 +12,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from asyncresp.paths import DRIVEN               # noqa: E402
+from asyncresp.paths import DRIVEN
 
 OUT_DIR = DRIVEN / "od_ud_55hz"
 DELTA_EL = [-10.0, 10.0]           # OD, UD (mV)

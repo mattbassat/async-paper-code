@@ -1,11 +1,4 @@
-"""Fig. 1e-f: power spectra of the spontaneous (undriven) LFP proxy.
-
-Each spectrum is the Welch PSD of the inhibitory LFP proxy over 2-10 s of spontaneous activity,
-averaged over 10 seeds (300-309).  Triangles mark the empirical resonance frequency of the same
-network in the frequency-response sweeps of Fig. 1c-d (the sampled drive frequency with the
-largest mean E response, shown only when above 10 Hz).  Panel e shows four networks of the
-Delta_EL sweep, panel f the extreme OD and UD network of each of the other four sweeps.
-"""
+"""Fig. 1e-f: power spectra of the spontaneous (undriven) LFP proxy."""
 import numpy as np
 from matplotlib.lines import Line2D
 

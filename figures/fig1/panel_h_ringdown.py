@@ -1,12 +1,5 @@
-"""Fig. 1h: LFP proxy around the offset of the drive, for the OD (Delta_EL = -10 mV) and UD
-(+10 mV) networks of Fig. 1g (single seed, 300).
-
-Protocol: nu_drive = 2 Hz, b = 0 pA, a 55 Hz sinusoidal drive of amplitude A = 1.8 Hz from 2 s
-to 5 s, then 3 s without modulation.  The LFP proxy is the inhibitory-conductance current summed
-over 500 excitatory cells, sampled every 0.5 ms.  Solid line: the steady-state sinusoid fitted
-during the drive; dashed line: the damped sinusoid fitted after the offset (see ringdown.py).
-Time is in drive cycles from the offset.
-"""
+"""Fig. 1h: LFP proxy around the offset of the drive, for the OD (Delta_EL = -10 mV) and UD (+10
+mV) networks of Fig. 1g (single seed, 300)."""
 import numpy as np
 
 from asyncresp.io import load_pickle
@@ -25,7 +18,8 @@ def load_run(delta_EL):
 
 
 def draw_ringdown(ax, run, color, title, ylabel=True, n_before=CYCLES_BEFORE, n_after=CYCLES_AFTER):
-    """LFP trace and the fitted curves, from n_before cycles before to n_after cycles after the offset."""
+    """LFP trace and the fitted curves, from n_before cycles before to n_after cycles after the
+    offset."""
     t = np.asarray(run["t_state"], dtype=float)
     x = np.asarray(run["lfp_inh"], dtype=float)
     t_off, period = run["oscillation_offset"], run["period_ms"]

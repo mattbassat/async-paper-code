@@ -1,27 +1,4 @@
-"""Linear stability of the mean-field fixed point as a function of Delta_EL (Fig. 3a curves).
-
-For each of the three parameter sets (nu_drive, b) = (2 Hz, 0 pA), (4 Hz, 0 pA) and
-(4 Hz, 60 pA), and for Delta_EL = EL_exc - EL_inh from +15 to -15 mV in steps of 0.5 mV
-(EL_exc = -70 mV), the first-order mean field (di Volo et al., 2019) with a dynamic time
-constant T = tau_V is integrated for 5 s (Euler, dt = 1 ms) from nu_e = 5 Hz, nu_i = 10 Hz,
-w = 600 pA, T = 10 ms.  The stationary state is the mean over the last second; at that point the
-2x2 Jacobian of (d nu_e/dt, d nu_i/dt) with respect to (nu_e, nu_i), adaptation held at its
-stationary value, is computed by central differences.  Its eigenvalues, eigenvectors, the
-eigenfrequency |Im lambda| / 2 pi and the partial derivatives are stored, together with
-delta_crit, the Delta_EL midway between the last complex and the first real pair of
-eigenvalues (boundary between under- and over-damped fixed points).
-
-The transfer function is asyncresp.mean_field.TF, whose tau_V weights the inhibitory term by
-(U_i T_i)^2; this equals the (Q_i U_i)^2 weighting of an earlier implementation whenever
-T_e = T_i, as here, so the results differ from the stored tables only by floating-point
-rounding.
-
-Writes data/sweeps/eigen_df_{r2b0,r4b0,r4b60}_dense.pkl (pandas DataFrames, 61 rows each).
-Runtime: about 20 s per parameter set.
-
-    python simulations/run_mean_field_eigenvalues.py [--sets r2b0 r4b0 r4b60] [--out DIR]
-    python simulations/run_mean_field_eigenvalues.py --check
-"""
+"""Linear stability of the mean-field fixed point as a function of Delta_EL (Fig. 3a curves)."""
 import argparse
 import pickle
 import sys
@@ -32,8 +9,8 @@ import numpy.linalg as la
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from asyncresp import mean_field as MF          # noqa: E402
-from asyncresp.paths import SWEEPS              # noqa: E402
+from asyncresp import mean_field as MF
+from asyncresp.paths import SWEEPS
 
 SETS = {"r2b0": dict(rate=2, b=0), "r4b0": dict(rate=4, b=0), "r4b60": dict(rate=4, b=60)}
 EL_EXC = -70
@@ -64,7 +41,8 @@ def run_mf_dynamic_T(fe0, fi0, w0, b, ext_drive, EL_exc, EL_inh, tfinal=5, dt=0.
 
 
 def fixed_point_jacobian(fe0, fi0, w0, ext, EL_exc, EL_inh, T, eps_rel=1e-6, eps_abs=1e-9):
-    """2x2 Jacobian of (d nu_e/dt, d nu_i/dt) at (fe0, fi0) with w = w0 fixed (central differences)."""
+    """2x2 Jacobian of (d nu_e/dt, d nu_i/dt) at (fe0, fi0) with w = w0 fixed (central
+    differences)."""
     def flow(fe, fi):
         fe_in = fe + ext
         return np.array([(MF.TF(MF.PRS, fe_in, fi, w0, EL_exc)[0] - fe) / T,

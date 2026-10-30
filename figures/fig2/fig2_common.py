@@ -1,12 +1,6 @@
 """Settings shared by the panels of Fig. 2: the three parameter sets, colours, plot style, and
-the mean-field stability quantities (eigenvalues and the balance metric B) along the ΔEL axis.
-
-Balance metric.  For the Jacobian J* of the two-dimensional rate dynamics at the fixed point,
-B = (tr J*)^2 / (4 det J*), which equals the square of the damping ratio.  B = 1 marks the
-boundary between a stable node (B > 1, over-damped, OD) and a stable focus (B < 1,
-under-damped, UD); on the focus side the ringing frequency of the mean field relative to its
-natural frequency f0 = sqrt(det J*) / 2 pi is f_eig / f0 = sqrt(1 - B).
-"""
+the mean-field stability quantities (eigenvalues and the balance metric B) along the ΔEL
+axis."""
 import numpy as np
 import matplotlib as mpl
 import seaborn as sns
@@ -46,8 +40,8 @@ def balance(ei):
 
 
 def eigen_sweep(ext, b, lo=-17.0, hi=17.0, n=161):
-    """Mean-field eigenvalues along ΔEL = EL_exc - EL_inh (EL_exc fixed at -70 mV), plus the
-    ΔEL at which the discriminant tr^2 - 4 det changes sign (the node/focus boundary)."""
+    """Mean-field eigenvalues along ΔEL = EL_exc - EL_inh (EL_exc fixed at -70 mV), plus the ΔEL
+    at which the discriminant tr^2 - 4 det changes sign (the node/focus boundary)."""
     d = np.linspace(lo, hi, n)
     ei = MF.eigen(MF.fixed_point(ext=ext, ELe=-70., ELi=-70. - d, b=b))
     ei["dEL"] = d

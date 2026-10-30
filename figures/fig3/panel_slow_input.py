@@ -1,10 +1,4 @@
-"""Fig. 3a: E and I responses to a slow (0.5 Hz) input as a function of Delta_EL.
-
-One column per parameter set: SNN responses (mean +- SD over seeds) over the analytical
-mean-field prediction of Eq. 4, on the OD / UD shading set by the mean-field boundary
-Delta_EL^crit.  Also draws the column titles, the E/I and SNN/analytical keys above the panel,
-and the symbols marking the example networks of Fig. 3c.
-"""
+"""Fig. 3a: E and I responses to a slow (0.5 Hz) input as a function of Delta_EL."""
 import numpy as np
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
@@ -78,10 +72,7 @@ def ei_legends(fig, ax_left):
 
 def mark_examples(axes, ax, symbols):
     """Mark the example networks of Fig. 3c by their symbols, in a strip under the data of `ax`
-    at their Delta_EL ({delta_EL: symbol}).
-
-    The bottom of every column is lowered by the same amount, so that the three columns keep a
-    common rate scale."""
+    at their Delta_EL ({delta_EL: symbol})."""
     lo, hi = ax.get_ylim()
     span = hi - lo
     for a in axes:

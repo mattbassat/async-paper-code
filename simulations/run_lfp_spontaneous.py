@@ -1,25 +1,4 @@
-"""Spontaneous AdEx network activity and its inhibitory-current LFP proxy (Fig. 1e, 1f, 6c).
-
-Three data sets, selected by a sub-command; each run is 10 s of spontaneous activity under a
-constant Poisson drive, one file per network and seed (seeds 300-309):
-
-  r2b0    Fig. 1e: nu_drive = 2 Hz, b = 0, Delta E_L = -15, -5, +5, +15 mV
-          -> data/spontaneous/adex_r2b0/r2b0_spontWS_{m15,m5,p5,p15}_0_<seed>.pkl
-  params  Fig. 1f: nu_drive = 2 Hz, Delta E_L = 0, one secondary parameter changed at a time
-          (Delta g_L = g_L,inh - g_L,exc = -5/+5 nS, b = 0/150 pA, Q_ee = 1.25/1.60 nS,
-          Q_ei = 1.40/2.00 nS)
-          -> data/spontaneous/adex_params/spont_<param>_<value>_<seed>.pkl
-  ach     Fig. 6c (pre/post spectra): nu_drive = 2 Hz, Delta E_L = +5 mV, b = 75 and 10 pA
-          -> data/spontaneous/ach/b5_new_dEL5_nu2_b{75,10}_<seed>.pkl
-
-Brian2 code-generation targets are those that produced the stored files (numpy for r2b0 and
-ach, cython for params); the runs are deterministic given the seed and the target.
-
-Runtime: about 1-1.5 min per run on one core (r2b0: 40 runs, params: 80 runs, ach: 20 runs).
-
-    python simulations/run_lfp_spontaneous.py r2b0 --workers 2
-    python simulations/run_lfp_spontaneous.py params --check
-"""
+"""Spontaneous AdEx network activity and its inhibitory-current LFP proxy (Fig. 1e, 1f)."""
 import argparse
 import os
 import pickle
@@ -33,8 +12,8 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from asyncresp.paths import SPONTANEOUS          # noqa: E402
-from simulations import adex_lfp                 # noqa: E402
+from asyncresp.paths import SPONTANEOUS
+from simulations import adex_lfp
 
 SEEDS = list(range(300, 310))
 
@@ -49,16 +28,11 @@ PARAM_VALUES = {
     "Qei":      [1.4, 2.0],       # nS
 }
 
-# ACh-like conditions (Fig. 6c)
-ACH_DELTA_EL, ACH_NU = 5.0, 2.0
-ACH_B_VALUES = [75.0, 10.0]
-
-
 def _signed(x, fmt):
     return format(x, fmt).replace("+", "p").replace("-", "m")
 
 
-# ---------------------------------------------------------------- one run per data set
+# --- one run per data set ---
 def r2b0_name(delta_EL, seed):
     return f"r2b0_spontWS_{_signed(delta_EL, '+.1f').replace('.', '_')}_{seed}.pkl"
 
@@ -78,6 +52,7 @@ def run_param(param, value, seed):
         kw["gL_inh"] = 10.0 + value
     elif param == "b":
         kw["b_post"] = value
+        kw["nu_0"] = 4.0                      # the b sweep is run in the nu_drive = 4 Hz network
     else:
         kw[param] = value
     out = adex_lfp.run_spontaneous_sim_params(seed=seed, target="cython", verbose=True, **kw)
@@ -85,25 +60,15 @@ def run_param(param, value, seed):
     return out
 
 
-def ach_name(b_val, seed):
-    return f"b5_new_dEL5_nu{ACH_NU:g}_b{b_val:g}_{seed}.pkl"
-
-
-def run_ach(b_val, seed):
-    return adex_lfp.run_spontaneous_sim(delta_EL=ACH_DELTA_EL, seed=seed, nu_0=ACH_NU, b_post=b_val,
-                                        target="numpy", verbose=True)
-
-
 DATASETS = {
     # name: (sub-folder, list of condition tuples, run function, file-name function, check condition)
     "r2b0":   ("adex_r2b0", [(d,) for d in R2B0_DELTA_EL], run_r2b0, r2b0_name, (-15.0,)),
     "params": ("adex_params", [(p, v) for p, vals in PARAM_VALUES.items() for v in vals],
                run_param, param_name, ("Qei", 2.0)),
-    "ach":    ("ach", [(b,) for b in ACH_B_VALUES], run_ach, ach_name, (10.0,)),
 }
 
 
-# ---------------------------------------------------------------- runner
+# --- runner ---
 def _job(args):
     dataset, cond, seed, out_dir = args
     _, _, run_fn, name_fn, _ = DATASETS[dataset]

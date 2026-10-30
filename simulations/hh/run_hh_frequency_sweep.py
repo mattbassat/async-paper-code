@@ -1,26 +1,4 @@
-"""Frequency-response sweep of the Hodgkin-Huxley network (Fig. 5a-b).
-
-For each inhibitory resting potential El_inh (El_exc = -70 mV, Delta_EL = El_exc - El_inh from
--20 to +10 mV in 2.5-mV steps), each of 34 input frequencies (0.5-200 Hz) and 10 seeds
-(12-21), the network of network.run_driven is simulated for 5 s: afferent Poisson drive
-nu_drive = 4 Hz, modulated by a 1-Hz-amplitude sinusoid from t = 2.5 s on.  Each record holds
-the sinusoid fits of the E and I population rates (amp_*, phase_*, offset_*), the baseline
-rates (average_*_rate), EL_inh, El_exc (mV), period (ms) and frequency (Hz).
-
-Output: data/sweeps/impulse_results_hh_grid_final.pkl, a list of dicts.  The stored file was
-simulated in two passes, the 5-mV grid (El_inh = -80, -75, ..., -50 mV) and then the
-intermediate values (-77.5, ..., -52.5 mV); the list is the first pass followed by the second,
-each sorted by (EL_inh, frequency).  The stored file lacks 10 of the 4420 records (El_inh =
--67.5 mV: one seed at 6 Hz and nine seeds at 7 Hz), which were lost when an interrupted run was
-resumed; a full re-run produces all 4420.  Within each (EL_inh, frequency) group the stored
-records are in completion order (the seed was not recorded); this script orders them by seed.
-
-Runtime: about 1.5-2 min per simulation on one core (C++ standalone build included), i.e.
-roughly 120-150 CPU hours for the full sweep.
-
-    python simulations/hh/run_hh_frequency_sweep.py --workers 8
-    python simulations/hh/run_hh_frequency_sweep.py --check
-"""
+"""Frequency-response sweep of the Hodgkin-Huxley network (Fig. 5a-b)."""
 import argparse
 import multiprocessing as mp
 import os
@@ -36,7 +14,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from asyncresp.paths import SWEEPS  # noqa: E402
+from asyncresp.paths import SWEEPS
 
 OUT_FILE = SWEEPS / "impulse_results_hh_grid_final.pkl"
 
@@ -92,12 +70,7 @@ def run_sweep(workers, seeds, out):
 
 def check():
     """Re-run El_inh = -80 mV, 200 Hz, seed 12 and compare with the stored records of that
-    condition (the seed is not stored, so one of the 10 stored records must match).
-
-    The baseline rates (plain means of the binned population rates) must be identical.  The
-    sinusoid-fit fields come from a least-squares solve whose last bits depend on the
-    LAPACK/BLAS build, so they are compared to a relative tolerance of 1e-12.
-    """
+    condition (the seed is not stored, so one of the 10 stored records must match)."""
     with open(OUT_FILE, "rb") as f:
         stored = pickle.load(f)
     el, freq = EL_INH_PASSES[0][0], 200

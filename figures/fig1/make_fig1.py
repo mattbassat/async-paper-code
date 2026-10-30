@@ -1,14 +1,5 @@
 """Build Fig. 1 from the stored results in data/ and write output/fig1.png (300 dpi) and
-output/fig1.pdf.
-
-Layout (every panel is placed at a fixed size, in inches):
-
-    | a  network schematic and example activity      | b  neuromodulation               |
-    | c  Delta_EL responses | d  other parameters    | g  OD vs UD, driven at 55 Hz     |
-    | e  spontaneous spectra| f  spectra, parameters | h  LFP at drive offset | i  CC   |
-
-    python figures/fig1/make_fig1.py
-"""
+output/fig1.pdf."""
 import sys
 from pathlib import Path
 
@@ -17,26 +8,26 @@ for p in (ROOT, Path(__file__).resolve().parent):
     if str(p) not in sys.path:
         sys.path.insert(0, str(p))
 
-import matplotlib as mpl  # noqa: E402
+import matplotlib as mpl
 mpl.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
-import numpy as np  # noqa: E402
-import seaborn as sns  # noqa: E402
-from matplotlib.ticker import LogLocator  # noqa: E402
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+from matplotlib.ticker import LogLocator
 
-from asyncresp.paths import output_path  # noqa: E402
-from common import rocket_colors  # noqa: E402
-from panel_a_network import draw_panel_a  # noqa: E402
-from panel_b_neuromodulation import draw_panel_b  # noqa: E402
-from panel_g_od_ud import draw_panel_g  # noqa: E402
-from panel_h_ringdown import draw_panel_h  # noqa: E402
-from panel_i_synchrony import draw_panel_i  # noqa: E402
-from panels_cd_frequency_response import (PANEL_D_SWEEPS, draw_excitability_key,  # noqa: E402
+from asyncresp.paths import output_path
+from common import rocket_colors
+from panel_a_network import draw_panel_a
+from panel_b_neuromodulation import draw_panel_b
+from panel_g_od_ud import draw_panel_g
+from panel_h_ringdown import draw_panel_h
+from panel_i_synchrony import draw_panel_i
+from panels_cd_frequency_response import (PANEL_D_SWEEPS, draw_excitability_key,
                                           draw_panel_c, draw_panel_d_axis)
-from panels_ef_spectra import PANEL_F_SWEEPS, draw_panel_e, draw_panel_f_axis  # noqa: E402
-from sweeps import load_sweep, sampled_resonance_peaks  # noqa: E402
+from panels_ef_spectra import PANEL_F_SWEEPS, draw_panel_e, draw_panel_f_axis
+from sweeps import load_sweep, sampled_resonance_peaks
 
-# ---- geometry, in inches -------------------------------------------------------------
+# --- geometry, in inches ---
 W_A, W_B, W_C = 5.88, 2.73, 3.01                 # panel widths
 GAP_W, GAP_H = 0.52, 0.55
 W_LEFT = W_B + GAP_W + W_C                       # left column: c + d (and e + f) side by side
@@ -95,14 +86,14 @@ def make_figure():
     mpl.rcParams.update(RC)
     fig = plt.figure(figsize=(FIGW, FIGH))
 
-    # ---------------------------------------------------------------- row 1
+    # --- row 1 ---
     draw_panel_a(fig, cell(fig, X[0], ROW[0], W_A, H_A))
     letter(fig, "a.", LX[0], ROW[0])
 
     draw_panel_b(fig, cell(fig, X[1] + 0.20, ROW[0] + 0.12 + B_DROP, W_LEFT - 0.20, H_A - 0.12))
     letter(fig, "b.", LX[1], ROW[0])
 
-    # ---------------------------------------------------------------- row 2
+    # --- row 2 ---
     ax_c = fig.add_subplot(cell(fig, X[0], ROW[1], W_B, H_TOP))
     draw_panel_c(ax_c, data_dEL)
     letter(fig, "c.", LX[0], ROW[1])
@@ -126,7 +117,7 @@ def make_figure():
                  wspace=GH_GAP / g_half)
     letter(fig, "g.", LX[1], ROW[1])
 
-    # ---------------------------------------------------------------- row 3
+    # --- row 3 ---
     ax_e = fig.add_subplot(cell(fig, X[0], ROW[2], W_B, H_BOT))
     draw_panel_e(ax_e, data_dEL, sampled_resonance_peaks(data_dEL, "delta_EL"))
     letter(fig, "e.", LX[0], ROW[2])

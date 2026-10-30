@@ -1,13 +1,4 @@
-"""Build Fig. 4: mean-field transfer functions across the OD / UD transition.
-
-    a  excitatory transfer function F_e for an overdamped network (Delta_EL = -15 mV), a network
-       next to the low-pass / resonant boundary (-6.25 mV) and an underdamped network (+5 mV)
-    b  the same for the inhibitory transfer function F_i
-
-All networks have nu_drive = 2 Hz and b = 0 pA.  The panels are computed directly from the
-mean-field transfer function (no stored data).  Writes output/fig4.png (300 dpi) and
-output/fig4.pdf.  Usage: python figures/fig4/make_fig4.py
-"""
+"""Build Fig. 4: mean-field transfer functions across the OD / UD transition."""
 import sys
 from pathlib import Path
 
@@ -15,14 +6,14 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import matplotlib                                              # noqa: E402
+import matplotlib
 matplotlib.use("Agg")
-import matplotlib as mpl                                       # noqa: E402
-import matplotlib.pyplot as plt                                # noqa: E402
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 
-from asyncresp.paths import output_path                        # noqa: E402
-from asyncresp.style import INK                                # noqa: E402
-from tf_panels import NORM, CMAP, operating_points, draw_tf_panel   # noqa: E402
+from asyncresp.paths import output_path
+from asyncresp.style import INK
+from tf_panels import NORM, CMAP, operating_points, draw_tf_panel
 
 STYLE = {
     "font.size": 7, "axes.labelsize": 7, "xtick.labelsize": 6.3, "ytick.labelsize": 6.3,

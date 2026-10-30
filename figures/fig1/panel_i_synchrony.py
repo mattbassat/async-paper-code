@@ -1,11 +1,5 @@
 """Fig. 1i: mean pairwise spike-count correlation (CC) against Delta_EL for the networks of the
-Delta_EL sweep (nu_drive = 2 Hz, b = 0 pA).
-
-CC is the mean Pearson correlation of 5 ms binned spike counts over all pairs of a sample of
-200 inhibitory + 800 excitatory neurons, 500-5000 ms, 10 realisations per network.  Points are
-the mean over realisations, error bars their SD; the dashed line is the conventional upper
-limit of an asynchronous state, CC = 0.1.  Colours as in Fig. 1c.
-"""
+Delta_EL sweep (nu_drive = 2 Hz, b = 0 pA)."""
 import numpy as np
 
 from asyncresp.io import load_pickle

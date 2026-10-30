@@ -1,11 +1,4 @@
-"""Analysis helpers shared by several figures.
-
-    aggregate_impulse_results   seed-averaged frequency responses of a sweep
-    sampled_resonance_peaks     the empirical resonance frequency of each network
-    welch_psd                   power spectrum of an LFP trace (the estimator used for all spectra)
-    rebin                       re-binning of population-rate traces
-    rocket_colors               the discrete colour scale used for sweep parameters
-"""
+"""Analysis helpers shared by several figures."""
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -15,11 +8,7 @@ RESONANCE_FMIN = 10.0     # Hz; a response maximum at or below this frequency is
 
 
 def aggregate_impulse_results(impulse_results, param_name):
-    """Mean and SD over seeds of the E and I response amplitudes, per (parameter, frequency).
-
-    `impulse_results` is a list of single runs (one network, one drive period, one seed).
-    delta_EL = EL_exc - EL_inh and delta_gL = gL_inh - gL_exc are reconstructed from the
-    stored single-population values; the drive frequency is 1000 / period (Hz)."""
+    """Mean and SD over seeds of the E and I response amplitudes, per (parameter, frequency)."""
     df = pd.DataFrame(impulse_results)
     if param_name == "delta_EL":
         df["delta_EL"] = df["EL_exc"] - df["EL_inh"]
@@ -37,7 +26,7 @@ def aggregate_impulse_results(impulse_results, param_name):
 def sampled_resonance_peaks(data, param_name, fmin=RESONANCE_FMIN):
     """Empirical resonance frequency of each network of a seed-averaged sweep: the sampled drive
     frequency with the largest mean E response, counted as a resonance only if it lies above
-    `fmin` (None otherwise).  No interpolation between the sampled frequencies."""
+    `fmin` (None otherwise)."""
     out = {}
     for value, sub in data.groupby(param_name):
         sub = sub.sort_values("frequency")
@@ -48,8 +37,8 @@ def sampled_resonance_peaks(data, param_name, fmin=RESONANCE_FMIN):
 
 def welch_psd(x, dt_ms, window=None):
     """Welch power spectral density (density scaling) of a trace sampled every `dt_ms`:
-    4096-sample segments (about 2 s at 2 kHz) with 50 % overlap and a Hann window.
-    `window` = (start, end) in ms restricts the trace before the estimate."""
+    4096-sample segments (about 2 s at 2 kHz) with 50 % overlap and a Hann window. `window` =
+    (start, end) in ms restricts the trace before the estimate."""
     if window is not None:
         i0, i1 = int(round(window[0] / dt_ms)), int(round(window[1] / dt_ms))
         x = x[i0:i1]

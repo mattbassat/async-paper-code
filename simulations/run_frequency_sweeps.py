@@ -1,45 +1,19 @@
-"""Frequency-response sweeps of the AdEx network over Delta_EL (Fig. 1c, Fig. 2e, Fig. 3a).
-
-For each of the three parameter sets (nu_drive, b) = (2 Hz, 0 pA), (4 Hz, 0 pA), (4 Hz, 60 pA),
-with modulation amplitude A = 1 Hz and EL_exc = -70 mV, the network of adex_impulse.py is
-driven at every input frequency f of the grid below for Delta_EL = EL_exc - EL_inh in
-{-15, -10, ..., +15} mV, ten seeds each (12-21).  Each run lasts 5 s; the modulation starts
-at 2 s and the response is fitted on the last 2 s.
-
-Writes, for tag in r2b0a1, r4b0a1, r4b60a1:
-  data/sweeps/impulse_results_{tag}_final.pkl   main grid, 7 Delta_EL x 31 f x 10 seeds
-                                                 (Fig. 1c, Fig. 2e, Fig. 3a)
-  data/sweeps/impulse_results_{tag}_extra.pkl   intermediate Delta_EL = +-2.5, +-7.5, +-12.5 mV
-                                                 at the slow-input frequency f = 0.5 Hz only,
-                                                 10 seeds, with the seed in `seed_used` (Fig. 3a)
-Each file is a list of result records (dicts) in the order Delta_EL, f, seed.
-
-The main grids were computed with Brian2's NumPy target and the modulation
-sin(2 pi (t - t_onset) f), the extra points with the Cython target and sin(2 pi t f) (identical
-at f = 0.5 Hz up to rounding); PART_SETTINGS reproduces both.
-
-Runtime: about 1.5 min per run on one core, i.e. about 160 core-hours for the three main
-grids (6510 runs) and 5 core-hours for the extra points (180 runs).
-
-    python simulations/run_frequency_sweeps.py [--sets r2b0a1 ...] [--part final extra]
-                                               [--seeds 12 13 ...] [--workers N] [--out DIR]
-    python simulations/run_frequency_sweeps.py --check     # re-run two stored runs (~3 min)
-"""
+"""Frequency-response sweeps of the AdEx network over Delta_EL (Fig. 1c, Fig. 2e, Fig. 3a)."""
 import os
-os.environ.setdefault("OPENBLAS_CORETYPE", "Prescott")    # see adex_impulse.py, "Reproducibility"
+os.environ.setdefault("OPENBLAS_CORETYPE", "Prescott")    # bit-reproducible fits (simulations/README.md)
 
-import argparse                                            # noqa: E402
-import pickle                                              # noqa: E402
-import sys                                                 # noqa: E402
-from multiprocessing import Pool                           # noqa: E402
-from pathlib import Path                                   # noqa: E402
+import argparse
+import pickle
+import sys
+from multiprocessing import Pool
+from pathlib import Path
 
-import numpy as np                                         # noqa: E402
+import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import adex_impulse as impulse                                  # noqa: E402
-from asyncresp.paths import SWEEPS                         # noqa: E402
+import adex_impulse as impulse
+from asyncresp.paths import SWEEPS
 
 SETS = {"r2b0a1": dict(rate=2, b=0), "r4b0a1": dict(rate=4, b=0), "r4b60a1": dict(rate=4, b=60)}
 A_VALUE = 1                                  # modulation amplitude (Hz)
@@ -91,8 +65,8 @@ def run_tasks(tasks, workers):
 
 
 def check():
-    """Re-run the first stored run of the r2b0a1 main grid (Delta_EL = -15 mV, f = 0.1 Hz,
-    seed 12) and of the r2b0a1 extra points (Delta_EL = -12.5 mV, f = 0.5 Hz, seed 12), and
+    """Re-run the first stored run of the r2b0a1 main grid (Delta_EL = -15 mV, f = 0.1 Hz, seed
+    12) and of the r2b0a1 extra points (Delta_EL = -12.5 mV, f = 0.5 Hz, seed 12), and
     compare every stored field."""
     stored = impulse.load_records(SWEEPS / "impulse_results_r2b0a1_final.pkl")[0]
     print("impulse_results_r2b0a1_final.pkl, first record (seed 12):")

@@ -1,11 +1,5 @@
 """Fig. 2b: population rates of the spiking network (SNN) and of the mean field under the same
-drive.
-
-One network (nu_drive = 4 Hz, b = 60 pA, ΔEL = 0) is spontaneous, then receives two cycles of a
-2 Hz sinusoidal modulation of the external drive, then is spontaneous again.  The stored SNN
-rates are drawn as thin traces; the first-order mean field, started from the SNN's initial
-rates and given exactly the same drive, is integrated here and drawn as thick traces.
-"""
+drive."""
 import numpy as np
 import matplotlib.patheffects as pe
 from matplotlib.lines import Line2D

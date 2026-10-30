@@ -1,10 +1,5 @@
-"""Frequency-response sweeps of the AdEx network (Fig. 1c-f): loading, averaging over seeds,
-and the empirical resonance frequency of each network.
-
-Each stored sweep is a list of single runs (one network, one drive period, one seed) with the
-fitted amplitudes of the evoked E and I rate modulations (`amp_exc`, `amp_inh`, in Hz).  All
-sweeps use nu_drive = 2 Hz, b = 0 pA (except the b sweep) and a drive amplitude A = 1 Hz.
-"""
+"""Frequency-response sweeps of the AdEx network (Fig. 1c-f): loading, averaging over seeds, and
+the empirical resonance frequency of each network."""
 from asyncresp.analysis import aggregate_impulse_results, sampled_resonance_peaks  # noqa: F401
 from asyncresp.io import load_pickle
 from asyncresp.paths import SWEEPS
@@ -13,7 +8,7 @@ from asyncresp.paths import SWEEPS
 SWEEP_FILES = {
     "delta_EL": (["impulse_results_r2b0a1_final.pkl"], "delta_EL"),
     "delta_gL": (["impulse_results_r2b0a1gLexc10_delta_gL_final.pkl"], "delta_gL"),
-    "b": (["impulse_results_changing_b_final.pkl"], "b_val"),
+    "b": (["impulse_results_changing_b_r4_final.pkl"], "b_val"),
     "Qee": ([f"impulse_results_r2b0a1_Qee_{ph}.pkl" for ph in ("slow", "slow_extra", "rest", "rest_extra")],
             "Qee"),
     "Qei": ([f"impulse_results_r2b0a1_Qei_{ph}.pkl" for ph in ("slow", "slow_extra", "rest")], "Qei"),

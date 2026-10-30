@@ -1,42 +1,17 @@
-"""Single driven runs of the AdEx network with full time series (Fig. 1a, Fig. 2b, Fig. 3c).
-
-All runs use the network of adex_impulse.py with return_traces=True (population rates in 1 ms
-bins, the afferent drive, spike trains, LFP proxy) and the Cython target.
-
-  fig1   nu_drive = 4 Hz, b = 0 pA, EL_exc = -70 mV, EL_inh = -60 mV, A = 1 Hz, f = 2 Hz,
-         5 s run, modulation from 2 s, seed 12
-         -> data/driven/fig1_example_sim.pkl                                      (Fig. 1a)
-  fig3   the nu_drive = 2 Hz, b = 0 pA networks with Delta_EL = -15, -5, +5 mV driven at the
-         slow-input frequency f = 0.5 Hz (A = 1 Hz), run for 7 s so that two full cycles
-         follow the 2 s of spontaneous activity, seeds 12-21; the spike trains and the LFP
-         proxy are not stored
-         -> data/driven/slow_input_examples/fig3_example_{m15,m5,p5}_{12..21}.pkl (Fig. 3c)
-  burst  nu_drive = 4 Hz, b = 60 pA, Delta_EL = 0 (EL = -70 mV), 4 s run: spontaneous for
-         1.5 s, a 2 Hz modulation of amplitude A = 1.5 Hz from 1.5 s to 2.5 s (two cycles),
-         then spontaneous again, seed 12.  The stored record does not list the run duration and
-         modulation end; they are fixed in BURST below.
-         -> data/mean_field/mf_burst_sim.pkl                                      (Fig. 2b)
-
-Runtime (one core): about 1 min per 5 s run; fig1 1 min, fig3 30 runs of about 1.5 min,
-burst 1 min (the first run also compiles the Cython code, a few minutes).
-
-    python simulations/run_examples.py [--which fig1 fig3 burst] [--seeds 12 ...]
-                                       [--workers N] [--out DATA_DIR]
-    python simulations/run_examples.py --check     # re-run Fig. 3c example -5 mV, seed 12 (~1.5 min)
-"""
+"""Single driven runs of the AdEx network with full time series (Fig. 1a, Fig. 2b, Fig. 3c)."""
 import os
-os.environ.setdefault("OPENBLAS_CORETYPE", "Prescott")    # see adex_impulse.py, "Reproducibility"
+os.environ.setdefault("OPENBLAS_CORETYPE", "Prescott")    # bit-reproducible fits (simulations/README.md)
 
-import argparse                                            # noqa: E402
-import pickle                                              # noqa: E402
-import sys                                                 # noqa: E402
-from multiprocessing import Pool                           # noqa: E402
-from pathlib import Path                                   # noqa: E402
+import argparse
+import pickle
+import sys
+from multiprocessing import Pool
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import adex_impulse as impulse                                  # noqa: E402
-from asyncresp.paths import DATA                           # noqa: E402
+import adex_impulse as impulse
+from asyncresp.paths import DATA
 
 TARGET = "cython"
 

@@ -1,41 +1,7 @@
 """AdEx network driven by a sinusoidally modulated afferent input (Brian2).
 
-A network of 8000 excitatory regular-spiking (RS) and 2000 inhibitory fast-spiking (FS) AdEx
-neurons (di Volo et al., 2019), randomly connected with probability 0.05 through
-conductance-based exponential synapses, receives Poisson input from 8000 afferent neurons
-whose common rate is
-
-    nu_aff(t) = nu_drive + A sin(2 pi t / P)     for t >= t_onset   (nu_drive before),
-
-with nu_drive the background drive, A the modulation amplitude and P = 1000 / f the period
-(ms).  The population rates (1 ms bins) are fitted, after a 3 s transient, with a sinusoid of
-the input frequency by linear least squares; the fitted amplitudes are the evoked E and I
-responses.  The amplitudes are also expressed relative to the SD of the rates during the
-spontaneous baseline (1 s to t_onset).
-
-`run_impulse_simulation` returns the fitted response of one run.  With `return_traces=True`
-it also returns the binned rates, the drive waveform, the spike trains and an LFP proxy; the
-extra recording does not change the simulated network (the monitor draws no random numbers),
-so the fitted values are identical with and without traces.
-
-Optional arguments reproduce the parameter variations of the paper:
-  * gL_exc / gL_inh  (nS): population-specific leak conductances (Delta g_L sweep);
-  * Qee, Qei, Qie, Qii (nS) and Tee, Tei, Tie, Tii (ms): pathway-specific quantal
-    conductances and synaptic decay times, Q_{source}{target} (e = RS, i = FS); the afferent
-    synapses onto RS and FS cells use Qee and Qei respectively;
-  * phase_from_onset: the modulation is sin(2 pi (t - t_onset) / P) instead of
-    sin(2 pi t / P).  For every input frequency that is a multiple of 0.5 Hz the two forms
-    coincide (t_onset = 2 s) up to floating-point rounding; both forms are kept because each
-    was used for some of the stored sweeps.
-
-Reproducibility.  Brian2's random-number streams depend on the code-generation target, so a
-stored result is reproduced only with the target it was computed with (set_target; each run
-script uses the right one).  The simulated network is then identical, but the least-squares
-fit can still differ in the last bits between BLAS/LAPACK builds (OpenBLAS, for instance,
-selects CPU-specific kernels).  The run scripts select OpenBLAS's generic x86-64 kernels
-(OPENBLAS_CORETYPE=Prescott), with which the stored results computed on x86-64 Linux (the
-Cython-target runs) are reproduced bit for bit; for the others the fitted values agree to a
-relative precision of about 1e-13.
+Note: Brian2's random streams depend on the code-generation target, so each stored result is
+only reproduced exactly with the target it was run with (see set_target and the run scripts).
 """
 import pickle
 
@@ -59,7 +25,8 @@ N_REC_EXC, V_REF, DT_LFP = 500, -60.0, 0.5           # cells, mV, ms
 
 def set_target(target):
     """Brian2 code-generation target ('numpy' or 'cython'); random-number streams are
-    target-specific, so a stored result is reproduced only with the target it was computed with."""
+    target-specific, so a stored result is reproduced only with the target it was computed
+    with."""
     prefs.codegen.target = target
 
 
@@ -81,7 +48,8 @@ def bin_array(array, bin_ms, time_array):
 
 
 def fit_sinusoid(time_ms, rate_hz, period_ms):
-    """Least-squares fit r(t) = a cos(wt) + b sin(wt) + c; returns amplitude, phase (rad), offset."""
+    """Least-squares fit r(t) = a cos(wt) + b sin(wt) + c; returns amplitude, phase (rad),
+    offset."""
     t = np.asarray(time_ms) * 1.0
     r = np.asarray(rate_hz) * 1.0
     mask = np.isfinite(r)
@@ -114,15 +82,8 @@ def run_impulse_simulation(b_val, rate, EL_inh, EL_exc, A=1, period=500, oscilla
                            gL_inh=None, gL_exc=None,
                            Qee=1.5, Qei=1.5, Qie=5.0, Qii=5.0,
                            Tee=5.0, Tei=5.0, Tie=5.0, Tii=5.0,
-                           return_traces=False):
-    """One run of the sinusoidally driven network.
-
-    b_val: spike-triggered adaptation of the RS cells (pA); rate: background drive nu_drive
-    (Hz); EL_inh, EL_exc: leak reversal potentials (mV); A: modulation amplitude (Hz); period:
-    modulation period (ms); oscillation_onset / oscillation_end: start / end of the modulation
-    (ms; the end defaults to the end of the run); seed: seed of NumPy and Brian2; tot_time:
-    duration (ms); gL_inh, gL_exc: leak conductances (nS; None = 10 nS for both).
-    """
+                           delay_ms=None, return_traces=False):
+    """One run of the sinusoidally driven network."""
     start_scope()
     np.random.seed(seed)
     brian_seed(seed)
@@ -184,12 +145,15 @@ def run_impulse_simulation(b_val, rate, EL_inh, EL_exc, A=1, period=500, oscilla
     if pop_gL:
         G_exc.gL = gL_exc * nS
 
+    # transmission delay, passed to every Synapses object below (no keyword without a delay)
+    dly = {} if delay_ms is None else {"delay": delay_ms * ms}
+
     # recurrent connections (the order of creation fixes the order of the random draws)
     prbC = 0.05
-    S_12 = Synapses(G_inh, G_exc, on_pre='GsynI_post+=Qie_s'); S_12.connect('i!=j', p=prbC)
-    S_11 = Synapses(G_inh, G_inh, on_pre='GsynI_post+=Qii_s'); S_11.connect('i!=j', p=prbC)
-    S_21 = Synapses(G_exc, G_inh, on_pre='GsynE_post+=Qei_s'); S_21.connect('i!=j', p=prbC)
-    S_22 = Synapses(G_exc, G_exc, on_pre='GsynE_post+=Qee_s'); S_22.connect('i!=j', p=prbC)
+    S_12 = Synapses(G_inh, G_exc, on_pre='GsynI_post+=Qie_s', **dly); S_12.connect('i!=j', p=prbC)
+    S_11 = Synapses(G_inh, G_inh, on_pre='GsynI_post+=Qii_s', **dly); S_11.connect('i!=j', p=prbC)
+    S_21 = Synapses(G_exc, G_inh, on_pre='GsynE_post+=Qei_s', **dly); S_21.connect('i!=j', p=prbC)
+    S_22 = Synapses(G_exc, G_exc, on_pre='GsynE_post+=Qee_s', **dly); S_22.connect('i!=j', p=prbC)
 
     # afferent Poisson population carrying the background drive and its modulation
     time_array_aff = np.arange(0, TotTime, DT)
@@ -198,8 +162,8 @@ def run_impulse_simulation(b_val, rate, EL_inh, EL_exc, A=1, period=500, oscilla
                                       phase_from_onset) * Hz
     rate_array = TimedArray(afferent_input, dt=DT * ms)
     G_aff = PoissonGroup(N_EXC, rates='rate_array(t)')
-    S_aff_ex = Synapses(G_aff, G_exc, on_pre='GsynE_post+=Qee_s'); S_aff_ex.connect(p=prbC)
-    S_aff_in = Synapses(G_aff, G_inh, on_pre='GsynE_post+=Qei_s'); S_aff_in.connect(p=prbC)
+    S_aff_ex = Synapses(G_aff, G_exc, on_pre='GsynE_post+=Qee_s', **dly); S_aff_ex.connect(p=prbC)
+    S_aff_in = Synapses(G_aff, G_inh, on_pre='GsynE_post+=Qei_s', **dly); S_aff_in.connect(p=prbC)
 
     M1G_inh = SpikeMonitor(G_inh)
     FRG_inh = PopulationRateMonitor(G_inh)
@@ -262,8 +226,7 @@ def run_impulse_simulation(b_val, rate, EL_inh, EL_exc, A=1, period=500, oscilla
     return out
 
 
-# ---- result records, with the fields (and field order) of the stored sweep files ----------
-
+# --- result records, with the fields (and field order) of the stored sweep files ---
 FIT_KEYS = ("amp_exc", "phase_exc_deg", "offset_exc", "amp_inh", "phase_inh_deg", "offset_inh",
             "amp_exc_norm", "amp_inh_norm")
 

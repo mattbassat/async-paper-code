@@ -1,11 +1,4 @@
-"""Fig. 3c: example responses to the slow (0.5 Hz) input for Delta_EL = -15, -5 and +5 mV.
-
-Population firing rates of three networks of the nu_drive = 2 Hz, b = 0 pA set (EL_exc = -70 mV,
-modulation amplitude A = 1 Hz): 1.5 s of spontaneous activity, then two full cycles of the
-drive starting at 2 s.  Each run (seeds 12-21) is drawn faintly under the seed average; the
-three panels share one rate axis.  The drive is redrawn as a dotted line under each panel, and
-the networks are marked in Fig. 3a by the same symbols.
-"""
+"""Fig. 3c: example responses to the slow (0.5 Hz) input for Delta_EL = -15, -5 and +5 mV."""
 import numpy as np
 import seaborn as sns
 

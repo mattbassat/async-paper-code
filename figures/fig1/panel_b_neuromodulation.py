@@ -1,17 +1,5 @@
-"""Fig. 1b: how acetylcholine and serotonin move the network along the excitability axis swept in
-Fig. 1c-f.
-
-Two columns (ACh, 5-HT), each read top to bottom: the receptor mechanism drawn on a membrane
-patch; its signature in a single AdEx cell (simulated here with the network's own cell
-parameters, C = 200 pF, g_L = 10 nS, E_L = -70 mV, Delta_T = 2 mV, V_T = -50 mV, tau_w = 500 ms,
-a = 0, V_r = -65 mV, 5 ms refractory); the AdEx parameters it changes; and a shared
-excitability bar with the direction in which each pushes the network.
-
-    ACh   : M1 muscarinic receptors suppress K+ currents -> less adaptation (b), higher E_L,
-            lower g_L -> towards UD
-    5-HT  : 5-HT1A hyperpolarises (lower E_L) -> towards OD;
-            5-HT2A depolarises (higher E_L)   -> towards UD
-"""
+"""Fig. 1b: how acetylcholine and serotonin move the network along the excitability axis swept
+in Fig. 1c-f."""
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
@@ -27,11 +15,10 @@ CELL = dict(C=200.0, gL=10.0, EL=-70.0, DT=2.0, VT=-50.0, tauw=500.0, a=0.0, Vr=
             b=0.0, refr=5.0)
 
 
-# ----------------------------------------------------------------- single AdEx cell
+# --- single AdEx cell ---
 def adex(I_pA, T=900.0, dt=0.02, t_on=150.0, t_off=800.0, **kw):
-    """Forward-Euler integration of one AdEx cell (units: pA, mV, nS, pF, ms) receiving a current
-    step I_pA between t_on and t_off; vectorised over I_pA.  Returns (t, V, spike mask), with V
-    clipped at the spike cut-off and each spike drawn as a jump to +20 mV."""
+    """Forward-Euler integration of one AdEx cell (units: pA, mV, nS, pF, ms) receiving a
+    current step I_pA between t_on and t_off; vectorised over I_pA."""
     p = dict(CELL); p.update(kw)
     I = np.atleast_1d(np.asarray(I_pA, float))
     n = int(T / dt)
@@ -57,7 +44,7 @@ def adex(I_pA, T=900.0, dt=0.02, t_on=150.0, t_off=800.0, **kw):
     return t, Vout, spk
 
 
-# ----------------------------------------------------------------- drawing helpers
+# --- drawing helpers ---
 def membrane(ax, y=0.60, h=0.13, x0=0.02, x1=0.98):
     ax.add_patch(Rectangle((x0, y), x1 - x0, h, facecolor=MEMBRANE, edgecolor="none", zorder=1))
     for yy in (y, y + h):
@@ -122,7 +109,7 @@ def param_box(ax, x, y, text, colour, w=0.42, h=0.20):
     ax.text(x, y, text, fontsize=7.5, color=INK, ha="center", va="center", zorder=3)
 
 
-# ----------------------------------------------------------------- the three rows
+# --- the three rows ---
 def draw_mechanism_ach(ax):
     ax.set_xlim(0, 1); ax.set_ylim(0.22, 1.06); ax.axis("off")
     membrane(ax)
@@ -168,7 +155,8 @@ def draw_signature_ach(axes, I=420.0):
 
 
 def draw_signature_5ht(axes, I=300.0):
-    """the same current step into the same cell; only E_L differs (1A hyperpolarises, 2A depolarises)"""
+    """the same current step into the same cell; only E_L differs (1A hyperpolarises, 2A
+    depolarises)"""
     win = (110.0, 700.0)
     specs = ((-60.0, C_UD, "5-HT$_{2A}$   ($E_L$ = $-$60 mV)"),
              (-70.0, "0.45", "control   ($E_L$ = $-$70 mV)"),
@@ -214,7 +202,7 @@ def draw_axis_bar(ax):
         ax.text(0.5 * (x0 + x1), 0.28, lab, fontsize=6.6, color=colour, ha="center", va="top")
 
 
-# ----------------------------------------------------------------- panel
+# --- panel ---
 def draw_panel_b(fig, spec):
     """The whole panel in one gridspec slot."""
     gs = spec.subgridspec(4, 2, height_ratios=[1.30, 1.55, 0.50, 0.50], hspace=0.28, wspace=0.26)

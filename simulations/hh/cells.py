@@ -1,17 +1,14 @@
-"""Single-cell Hodgkin-Huxley models (regular-spiking excitatory and fast-spiking inhibitory).
+"""Single-cell Hodgkin-Huxley models (RS and FS), adapted from Carlu et al. (2020).
 
-Adapted from Carlu et al. (2020, J. Neurophysiol.).  The conductance densities and spike
-thresholds VT were chosen by a grid search so that the passive membrane properties
-(Cm = 200 pF, gL = 10 nS, EL = -70 mV) match the AdEx cells of the rest of the paper; the
-M-current (adaptation) is switched off, matching the AdEx networks with b = 0.
-Units: Cm in pF, conductances in nS, potentials in mV, tau_max in ms.
+Conductances and VT were grid-searched to match the passive properties of the AdEx cells
+(Cm = 200 pF, gL = 10 nS, EL = -70 mV); the M-current is off (as b = 0 in the AdEx networks).
 """
 import brian2
 
 
 def get_neuron_params(NAME, name='', number=1):
-    """Parameter dictionary of the cell type NAME ('HH_RS_grid' or 'HH_FS_grid')
-    for a population of `number` neurons."""
+    """Parameter dictionary of the cell type NAME ('HH_RS_grid' or 'HH_FS_grid') for a
+    population of `number` neurons."""
     if NAME == 'HH_RS_grid':
         membrane_size = 200e-6  # cm^2
         # excitatory regular-spiking cell
@@ -52,14 +49,7 @@ def get_neuron_params(NAME, name='', number=1):
 
 
 def get_membrane_equation(neuron_params, synaptic_array):
-    """NeuronGroup of HH cells with conductance-based exponential synapses.
-
-    Sodium, delayed-rectifier potassium and slow M-type potassium currents with Traub-Miles
-    kinetics relative to the threshold parameter VT (Carlu et al. 2020).  El and VT are
-    per-neuron state variables, set by the caller.  `synaptic_array` lists the presynaptic
-    synapse types onto this population (keys name, Erev, Tsyn); each adds a conductance
-    G<name> decaying with time constant Tsyn.  A spike is detected when V crosses 0 mV.
-    """
+    """NeuronGroup of HH cells with conductance-based exponential synapses."""
     if 'tau_max' not in neuron_params:
         neuron_params['tau_max'] = 400.  # ms
 

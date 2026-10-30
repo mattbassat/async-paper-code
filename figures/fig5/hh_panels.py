@@ -1,12 +1,4 @@
-"""Panels of Fig. 5 (Hodgkin-Huxley network).
-
-    a  E response amplitude against input frequency, one curve per Delta_EL (mean +/- s.d.
-       over 10 seeds), with a Delta_EL colour bar above the axes
-    b  the slow-input (0.5 Hz) E response against Delta_EL
-    c  spontaneous LFP-proxy spectra of four networks; triangles mark the frequency of the
-       peak mean evoked E response of the same network (panel a), when above 10 Hz, i.e. the
-       low-gamma E/I resonance rather than the high-gamma peak of the I-I loop
-"""
+"""Panels of Fig. 5 (Hodgkin-Huxley network)."""
 import numpy as np
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.colors import BoundaryNorm, ListedColormap

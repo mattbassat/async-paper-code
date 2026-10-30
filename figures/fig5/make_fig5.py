@@ -1,12 +1,4 @@
-"""Build Fig. 5: the transition between asynchronous states in a Hodgkin-Huxley network.
-
-    a  E response amplitude against input frequency, one curve per Delta_EL
-    b  the slow-input (0.5 Hz) E response against Delta_EL
-    c  spontaneous LFP-proxy spectra of four networks, with the resonance peak of each
-       network marked (the Hodgkin-Huxley counterpart of Fig. 1e)
-
-    python figures/fig5/make_fig5.py      ->  output/fig5.png, output/fig5.pdf
-"""
+"""Build Fig. 5: the transition between asynchronous states in a Hodgkin-Huxley network."""
 import sys
 from pathlib import Path
 

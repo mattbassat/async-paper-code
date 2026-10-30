@@ -1,11 +1,4 @@
-"""Build Fig. 3: responses to slow input across the OD / UD transition.
-
-    a  slow-input (0.5 Hz) E and I responses vs Delta_EL, SNN and analytical (three parameter sets)
-    b  normalised E responses vs the balance metric B
-    c  example slow-input responses for Delta_EL = -15, -5 and +5 mV
-
-Writes output/fig3.png (300 dpi) and output/fig3.pdf.  Usage: python figures/fig3/make_fig3.py
-"""
+"""Build Fig. 3: responses to slow input across the OD / UD transition."""
 import sys
 from pathlib import Path
 
@@ -13,16 +6,16 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import matplotlib                                              # noqa: E402
+import matplotlib
 matplotlib.use("Agg")
-import matplotlib as mpl                                       # noqa: E402
-import matplotlib.pyplot as plt                                # noqa: E402
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 
-from asyncresp.paths import output_path                        # noqa: E402
-from sweep_data import SETS, load_set, slow_table              # noqa: E402
-from panel_slow_input import draw_slow_input, column_title, ei_legends, mark_examples  # noqa: E402
-from panel_balance import draw_balance                         # noqa: E402
-from panel_examples import draw_examples, example_symbols      # noqa: E402
+from asyncresp.paths import output_path
+from sweep_data import SETS, load_set, slow_table
+from panel_slow_input import draw_slow_input, column_title, ei_legends, mark_examples
+from panel_balance import draw_balance
+from panel_examples import draw_examples, example_symbols
 
 STYLE = {
     "font.size": 7, "axes.labelsize": 7, "xtick.labelsize": 6.3, "ytick.labelsize": 6.3,

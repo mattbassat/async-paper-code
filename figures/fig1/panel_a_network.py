@@ -1,14 +1,6 @@
 """Fig. 1a: network schematic with a recording electrode, and an example of the evoked activity:
-the sinusoidal drive, a spike raster, the I and E population rates with their fitted sinusoids,
-and the LFP proxy.
-
-The schematic shows an excitatory (8000) and an inhibitory (2000) population of randomly
-connected AdEx neurons, the four recurrent projections, and the external Poisson population
-(rate nu_drive) that drives both.  The traces come from one stored simulation (nu_drive = 4 Hz,
-b = 0 pA, EL_exc = -70 mV, EL_inh = -60 mV, A = 1 Hz, f = 2 Hz, drive onset 2 s, seed 12).  The
-LFP proxy is the sum over 500 excitatory cells of |G_I (E_I - V_ref)|, V_ref = -60 mV, sampled
-every 0.5 ms.
-"""
+the sinusoidal drive, a spike raster, the I and E population rates with their fitted
+sinusoids, and the LFP proxy."""
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -39,7 +31,7 @@ def load_example():
     return load_pickle(DRIVEN / "fig1_example_sim.pkl")
 
 
-# ----------------------------------------------------------------- network schematic
+# --- network schematic ---
 def _blob(n, centre, radius, rng, wobble=(0.14, 0.09)):
     """n points inside a slightly irregular disc."""
     th = rng.uniform(0, 2 * np.pi, n)
@@ -130,7 +122,7 @@ def draw_network_schematic(ax, ylim=(-3.3, 2.9)):
     return back
 
 
-# ----------------------------------------------------------------- example simulation
+# --- example simulation ---
 def _sine(t, amp, phase_rad, offset, period_ms):
     """Fitted response: r(t) = amp * cos(2 pi t / period + phase) + offset."""
     return offset + amp * np.cos(2 * np.pi * t / period_ms + phase_rad)
@@ -226,8 +218,8 @@ def rate_limits(o, window=WINDOW, head=(0.16, 0.14)):
 
 
 def rate_split(o, window=WINDOW):
-    """Height ratios of the I and E rate axes, and the height of the pair in strip units.
-    The heights are proportional to the y-ranges, so both axes share one Hz-per-inch scale."""
+    """Height ratios of the I and E rate axes, and the height of the pair in strip units. The
+    heights are proportional to the y-ranges, so both axes share one Hz-per-inch scale."""
     (i0, i1), (e0, e1) = rate_limits(o, window)
     span_i, span_e = i1 - i0, e1 - e0
     return [span_i, span_e], STRIP_UNITS["exc_rate"] * (span_i + span_e) / span_e
@@ -242,10 +234,7 @@ def crest_time(o, pop, k=AMP_CREST):
 
 
 def draw_rates(axes, o, window=WINDOW):
-    """I and E population rates on a common Hz-per-inch scale, with the fitted sinusoids.
-
-    The evoked response amplitude is the amplitude of the fitted sinusoid (fitted offset to
-    crest) and is marked by a caliper of that length in the third crest of each fit."""
+    """I and E population rates on a common Hz-per-inch scale, with the fitted sinusoids."""
     ax_i, ax_e = axes
     t, fi, fe = rate_traces(o, window)
     onset = o["oscillation_onset"]
@@ -321,9 +310,10 @@ def draw_lfp(ax, o, window=WINDOW, scalebar_ms=500):
             ha="center", va="top", color=INK)
 
 
-# ----------------------------------------------------------------- panel
+# --- panel ---
 def draw_panel_a(fig, spec):
-    """The whole panel in one gridspec slot: schematic on the left, the four strips on the right."""
+    """The whole panel in one gridspec slot: schematic on the left, the four strips on the
+    right."""
     o = load_example()
     split, rate_units = rate_split(o)
     strip_h = [STRIP_UNITS["drive"], STRIP_UNITS["raster"], rate_units, STRIP_UNITS["lfp"]]

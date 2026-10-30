@@ -1,53 +1,22 @@
-"""Frequency-response sweeps over other neuromodulated parameters (Fig. 1d).
-
-The network of adex_impulse.py (A = 1 Hz, seeds 12-21, 5 s runs, modulation from 2 s, fit on
-the last 2 s) is driven at every input frequency f while one parameter is varied away from
-the reference network (nu_drive = 2 Hz, b = 0 pA, EL_exc = EL_inh = -70 mV):
-
-  changing_b  spike-triggered adaptation b of the RS cells, 0 ... 150 pA in steps of 25 pA
-              -> data/sweeps/impulse_results_changing_b_final.pkl
-  delta_gL    leak conductance of the FS cells, g_L,inh = g_L,exc - Delta g_L with
-              g_L,exc = 10 nS and Delta g_L = -5 ... +5 nS (field delta_gL = gL_exc - gL_inh)
-              -> data/sweeps/impulse_results_r2b0a1gLexc10_delta_gL_final.pkl
-  Qee, Qei    excitatory quantal conductance onto RS cells (Qee, also used for the afferent
-              synapses onto RS cells) or onto FS cells (Qei, also used for the afferent synapses
-              onto FS cells), in nS.  These sweeps were run in two phases of input frequency,
-              the slow input f = 0.5 Hz ("slow") and the remaining 28 frequencies ("rest"),
-              with later additions of parameter values ("*_extra"):
-              -> data/sweeps/impulse_results_r2b0a1_Qee_{slow,slow_extra,rest,rest_extra}.pkl
-              -> data/sweeps/impulse_results_r2b0a1_Qei_{slow,slow_extra,rest}.pkl
-
-The b and Delta g_L sweeps use the modulation sin(2 pi (t - t_onset) f) (see adex_impulse.py).
-The b sweep was computed with Brian2's Cython target, the other sweeps with the NumPy target
-(TARGETS below).
-Records are written in loop order (b or Delta g_L, then f, then seed; for the Q sweeps f,
-then the parameter value, then seed).  The stored "rest" files of the Q sweeps were collected
-from parallel workers in completion order, so their record order differs from the loop order.
-
-Runtime: about 1.5 min per run on one core: changing_b 2030 runs, delta_gL 3190 runs,
-Qee 2320 runs, Qei 2030 runs (roughly 50-80 core-hours per family).
-
-    python simulations/run_alt_parameter_sweeps.py [--sweeps changing_b delta_gL Qee Qei]
-                                                   [--seeds 12 13 ...] [--workers N] [--out DIR]
-    python simulations/run_alt_parameter_sweeps.py --check  # re-run one stored run (~2 min)
-"""
+"""Frequency-response sweeps over other neuromodulated parameters (Fig. 1d)."""
 import os
-os.environ.setdefault("OPENBLAS_CORETYPE", "Prescott")    # see adex_impulse.py, "Reproducibility"
+os.environ.setdefault("OPENBLAS_CORETYPE", "Prescott")    # bit-reproducible fits (simulations/README.md)
 
-import argparse                                            # noqa: E402
-import pickle                                              # noqa: E402
-import sys                                                 # noqa: E402
-from multiprocessing import Pool                           # noqa: E402
-from pathlib import Path                                   # noqa: E402
+import argparse
+import pickle
+import sys
+from multiprocessing import Pool
+from pathlib import Path
 
-import numpy as np                                         # noqa: E402
+import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import adex_impulse as impulse                                  # noqa: E402
-from asyncresp.paths import SWEEPS                         # noqa: E402
+import adex_impulse as impulse
+from asyncresp.paths import SWEEPS
 
 RATE, B, A_VALUE, EL_EXC = 2, 0, 1, -70
+RATE_B = 4                                      # drive of the b sweep (Hz)
 FREQ_FULL = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30,
              35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100]    # Hz
 FREQ_SLOW = [0.5]
@@ -72,12 +41,11 @@ SWEEPS_ALL = ["changing_b", "delta_gL", "Qee", "Qei"]
 TARGETS = {"b": "cython", "gL": "numpy", "syn": "numpy"}      # Brian2 target per sweep kind
 
 
-# ---- task lists: (kind, arguments) in the loop order of each sweep -------------------------
-
+# --- task lists: (kind, arguments) in the loop order of each sweep ---
 def changing_b_tasks(seeds):
     periods = 1000 / np.array(FREQ_FULL)
     EL_inh = EL_EXC - 0                         # Delta_EL = 0
-    return [("b", (b, RATE, EL_inh, EL_EXC, A_VALUE, per, seed))
+    return [("b", (b, RATE_B, EL_inh, EL_EXC, A_VALUE, per, seed))
             for b in B_RANGE for per in periods for seed in seeds]
 
 
@@ -127,7 +95,7 @@ def run_tasks(tasks, workers):
 def outputs(sweep, seeds):
     """(file name, task list) of every output file of one sweep family."""
     if sweep == "changing_b":
-        return [("impulse_results_changing_b_final.pkl", changing_b_tasks(seeds))]
+        return [(f"impulse_results_changing_b_r{RATE_B}_final.pkl", changing_b_tasks(seeds))]
     if sweep == "delta_gL":
         return [(f"impulse_results_r{RATE}b{B}a{A_VALUE}gLexc{GL_EXC}_delta_gL_final.pkl",
                  delta_gl_tasks(seeds))]

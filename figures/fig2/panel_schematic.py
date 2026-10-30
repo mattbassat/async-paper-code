@@ -1,10 +1,4 @@
-"""Fig. 2a: schematic of the two-population mean field and its equations.
-
-The two rate variables (nu_e, nu_i) are drawn as populations with their four recurrent
-projections and the external drive onto both.  Adaptation w is drawn inside the excitatory
-population, since it is a state variable of the RS cells: driven by nu_e and feeding back
-negatively on it.
-"""
+"""Fig. 2a: schematic of the two-population mean field and its equations."""
 import numpy as np
 from matplotlib.patches import Circle, FancyArrowPatch, FancyBboxPatch
 
@@ -22,8 +16,8 @@ def _arrow(ax, p0, p1, colour, rad=0.0, lw=1.6, ms=11, ls="-", zorder=4):
 
 
 def _self_loop(ax, centre, r, colour, side=1, lw=1.6, ms=11):
-    """A recurrent self-projection: an arc leaving and re-entering the same circle, on the
-    outer side (side = -1: left, +1: right) of the population."""
+    """A recurrent self-projection: an arc leaving and re-entering the same circle, on the outer
+    side (side = -1: left, +1: right) of the population."""
     a0, a1 = (215, 145) if side < 0 else (-35, 35)
     p0 = (centre[0] + r * np.cos(np.radians(a0)), centre[1] + r * np.sin(np.radians(a0)))
     p1 = (centre[0] + r * np.cos(np.radians(a1)), centre[1] + r * np.sin(np.radians(a1)))
