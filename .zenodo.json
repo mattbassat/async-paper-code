@@ -1,0 +1,10 @@
+{
+  "title": "Code and data for: A continuum of asynchronous states in cerebral cortex networks, and their responsiveness to external inputs",
+  "upload_type": "software",
+  "description": "Spiking-network (AdEx and Hodgkin-Huxley) simulations, mean-field analysis and figure scripts for Bassat, Destexhe & Tesler, A continuum of asynchronous states in cerebral cortex networks, and their responsiveness to external inputs.",
+  "creators": [
+    {"name": "Bassat, Matthew", "affiliation": "Paris-Saclay Institute of Neuroscience (NeuroPSI), CNRS, Paris-Saclay University"},
+    {"name": "Destexhe, Alain", "affiliation": "Paris-Saclay Institute of Neuroscience (NeuroPSI), CNRS, Paris-Saclay University"},
+    {"name": "Tesler, Federico", "affiliation": "Paris-Saclay Institute of Neuroscience (NeuroPSI), CNRS, Paris-Saclay University"}
+  ]
+}

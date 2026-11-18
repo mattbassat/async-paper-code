@@ -81,4 +81,4 @@ def draw_excitability_key(cax):
         s.set_visible(False)
     cax.text(-0.02, 0.5, "low-pass (OD)", transform=cax.transAxes, ha="right", va="center", fontsize=6.5)
     cax.text(1.02, 0.5, "resonant (UD)", transform=cax.transAxes, ha="left", va="center", fontsize=6.5)
-    cax.text(0.5, 1.6, "Excitability", transform=cax.transAxes, ha="center", va="bottom", fontsize=6.5)
+    cax.text(0.5, 1.6, "Relative E/I excitability", transform=cax.transAxes, ha="center", va="bottom", fontsize=6.5)

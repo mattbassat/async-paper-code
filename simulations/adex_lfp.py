@@ -145,10 +145,10 @@ def _model_constants():
 # --- spontaneous activity ---
 def run_spontaneous_sim(delta_EL, seed, nu_0=2.0, b_post=0.0, total_ms=10000.0,
                         analysis_window=(2000.0, 10000.0), delay_ms=0.0, target="numpy",
-                        verbose=False):
+                        record_spikes=False, verbose=False):
     """Spontaneous activity under a constant Poisson drive nu_0 (Hz) onto both populations."""
-    from brian2 import (PoissonGroup, Synapses, PopulationRateMonitor, StateMonitor, run,
-                        ms, nS, Hz)
+    from brian2 import (PoissonGroup, Synapses, PopulationRateMonitor, StateMonitor,
+                        SpikeMonitor, run, ms, nS, Hz)
     rng = _setup(seed, target, DT_MS)
     ns = _model_constants()
     C, tauw, a, I, Ee, Ei = (ns[k] for k in ("C", "tauw", "a", "I", "Ee", "Ei"))
@@ -172,6 +172,8 @@ def run_spontaneous_sim(delta_EL, seed, nu_0=2.0, b_post=0.0, total_ms=10000.0,
     FRG_exc = PopulationRateMonitor(G_exc)
     M_gE = StateMonitor(G_exc, 'GsynE', record=rec_exc, dt=MON_DT_MS * ms)
     M_gI = StateMonitor(G_exc, 'GsynI', record=rec_exc, dt=MON_DT_MS * ms)
+    if record_spikes:                     # monitors draw no random numbers: same network activity
+        S_exc, S_inh = SpikeMonitor(G_exc), SpikeMonitor(G_inh)
 
     t0 = time.time()
     run(total_ms * ms)
@@ -191,6 +193,9 @@ def run_spontaneous_sim(delta_EL, seed, nu_0=2.0, b_post=0.0, total_ms=10000.0,
         mean_exc_rate=_window_mean(fr_exc, t_fr, *analysis_window),
         mean_inh_rate=_window_mean(fr_inh, t_fr, *analysis_window),
         sim_time_s=sim_time)
+    if record_spikes:
+        out.update(spikes_exc=(np.asarray(S_exc.i), np.asarray(S_exc.t / ms)),
+                   spikes_inh=(np.asarray(S_inh.i), np.asarray(S_inh.t / ms)))
     if verbose:
         print(f"  spontaneous dEL={delta_EL:+g} nu0={nu_0:g} b={b_post:g} seed={seed}: "
               f"rates {out['mean_exc_rate']:.2f}/{out['mean_inh_rate']:.2f} Hz ({sim_time:.0f} s)",
@@ -200,10 +205,11 @@ def run_spontaneous_sim(delta_EL, seed, nu_0=2.0, b_post=0.0, total_ms=10000.0,
 
 def run_spontaneous_sim_params(seed, delta_EL=0.0, nu_0=2.0, b_post=0.0,
                                gL_exc=10.0, gL_inh=10.0, Qee=1.5, Qei=1.5, Qie=5.0, Qii=5.0,
-                               total_ms=10000.0, target="cython", verbose=False):
+                               total_ms=10000.0, target="cython", record_spikes=False,
+                               verbose=False):
     """Spontaneous activity with population-specific leak and quantal conductances."""
-    from brian2 import (PoissonGroup, Synapses, PopulationRateMonitor, StateMonitor, run,
-                        ms, nS, Hz)
+    from brian2 import (PoissonGroup, Synapses, PopulationRateMonitor, StateMonitor,
+                        SpikeMonitor, run, ms, nS, Hz)
     rng = _setup(seed, target, DT_MS)
     ns = _model_constants()
     C, tauw, a, I, Ee, Ei = (ns[k] for k in ("C", "tauw", "a", "I", "Ee", "Ei"))
@@ -226,6 +232,8 @@ def run_spontaneous_sim_params(seed, delta_EL=0.0, nu_0=2.0, b_post=0.0,
     FRG_exc = PopulationRateMonitor(G_exc)
     M_gE = StateMonitor(G_exc, 'GsynE', record=rec_exc, dt=MON_DT_MS * ms)
     M_gI = StateMonitor(G_exc, 'GsynI', record=rec_exc, dt=MON_DT_MS * ms)
+    if record_spikes:                     # monitors draw no random numbers: same network activity
+        S_exc, S_inh = SpikeMonitor(G_exc), SpikeMonitor(G_inh)
 
     t0 = time.time()
     run(total_ms * ms)
@@ -239,6 +247,9 @@ def run_spontaneous_sim_params(seed, delta_EL=0.0, nu_0=2.0, b_post=0.0,
         mean_rate_exc=float(np.mean(FRG_exc.rate / Hz)), mean_rate_inh=float(np.mean(FRG_inh.rate / Hz)),
         lfp_absmag=lfp_absmag.astype(np.float32), lfp_exc=lfp_exc.astype(np.float32),
         lfp_inh=lfp_inh.astype(np.float32), sim_time_s=sim_time)
+    if record_spikes:
+        out.update(spikes_exc=(np.asarray(S_exc.i), np.asarray(S_exc.t / ms)),
+                   spikes_inh=(np.asarray(S_inh.i), np.asarray(S_inh.t / ms)))
     if verbose:
         print(f"  spontaneous seed={seed}: rates {out['mean_rate_exc']:.2f}/{out['mean_rate_inh']:.2f} Hz "
               f"({sim_time:.0f} s)", flush=True)

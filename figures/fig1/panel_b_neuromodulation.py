@@ -194,7 +194,7 @@ def draw_axis_bar(ax):
     ax.imshow(grad, aspect="auto", cmap=sns.color_palette("rocket", as_cmap=True),
               extent=[0.22, 0.78, 0.56, 0.74])
     ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.axis("off")
-    ax.text(0.5, 0.80, "Excitability", fontsize=7, ha="center", va="bottom", color=INK2)
+    ax.text(0.5, 0.80, "Relative E/I excitability", fontsize=7, ha="center", va="bottom", color=INK2)
     for x0, x1, colour, lab in ((0.50, 0.74, C_UD, "ACh,  5-HT$_{2A}$"),
                                 (0.50, 0.26, C_OD, "5-HT$_{1A}$")):
         ax.add_patch(FancyArrowPatch((x0, 0.40), (x1, 0.40), arrowstyle="-|>", mutation_scale=9,

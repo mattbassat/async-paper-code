@@ -1,9 +1,9 @@
-"""Fig. 6: the state-dependent mean-field time constant T = tau_V."""
+"""Supplementary figure: the state-dependent mean-field time constant T = tau_V."""
 import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parent / "supp"))
+sys.path.insert(0, str(HERE))
 
 import matplotlib
 matplotlib.use("Agg")
@@ -38,10 +38,10 @@ def make():
         ax.text(0.5 * (ei["xcrit"] + XLIM[1]), 0.6, "UD", ha="center", va="bottom", fontsize=6.5,
                 weight="bold", color=SC.UD_INK)
     axes[0].set_ylabel(r"$T = \tau_V$ (ms)")
-    out = OUTPUT
+    out = OUTPUT / "supp"
     out.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out / "fig6.png", dpi=300)
-    fig.savefig(out / "fig6.pdf")
+    fig.savefig(out / "figS_state_dependent_T.png", dpi=300)
+    fig.savefig(out / "figS_state_dependent_T.pdf")
     return fig
 
 
