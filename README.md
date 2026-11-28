@@ -87,3 +87,7 @@ Python 3.11 with the versions in `requirements.txt`. The simulations also need a
 If you use this code, please cite the paper above. The Hodgkin-Huxley network is adapted from
 Carlu et al. (2020), *J. Neurophysiol.*; the mean-field transfer-function fits are those of
 di Volo et al. (2019), *Neural Comput.*
+
+## Licence
+
+MIT (see `LICENSE`).
